@@ -1,0 +1,2282 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robotics Customized UI – slovenský preklad</title>
+<style>
+:root{--ink:#1a1a1a;--mut:#5b6472;--line:#e2e6ec;--acc:#0a6ed1;--bg:#fff;--code:#f6f8fa}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:24px 18px 96px}
+h1{font-size:28px;line-height:1.25;margin:8px 0 4px}
+h2{font-size:23px;margin:48px 0 8px;padding-top:18px;border-top:3px solid var(--acc)}
+h3{font-size:19px;margin:32px 0 6px;color:#0b3d6b}
+h4{font-size:16px;margin:22px 0 4px}
+p{margin:10px 0}
+ul,ol{margin:10px 0 10px 22px;padding:0}
+li{margin:4px 0}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+pre{background:var(--code);border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:12px 0}
+pre code{background:none;padding:0;font-size:12.5px;white-space:pre}
+figure{margin:18px 0;padding:0}
+figure img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:6px;display:block}
+figcaption{font-size:13px;color:var(--mut);margin-top:6px}
+.note{background:#fff8e6;border-left:3px solid #e0a800;padding:10px 14px;border-radius:0 6px 6px 0;margin:14px 0}
+.tip{background:#eef6ff;border-left:3px solid var(--acc);padding:10px 14px;border-radius:0 6px 6px 0;margin:14px 0}
+.lead{color:var(--mut);font-size:15px}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f3f6fa}
+.toc{background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin:20px 0}
+.toc a{color:var(--acc);text-decoration:none}
+.toc ol{margin-left:18px}
+.src{font-size:12px;color:var(--mut);border-top:1px solid var(--line);margin-top:60px;padding-top:12px}
+kbd{border:1px solid #bbb;border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:13px;background:#fafafa}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Robotics Customized UI</h1>
+<p class="lead">Slovenský preklad príručky Siemens Tecnomatix (Process&nbsp;Simulate / RobotExpert), vydanie 2022. Prispôsobenie používateľského rozhrania robotiky cez XML: vlastné OLP príkazy, vlastné pohybové príkazy, dátové typy, šablóny dráh a šablóny downloadu.</p>
+
+<div class="note"><strong>Poznámka k prekladu:</strong> Názvy XML elementov, atribútov, hodnôt a tlačidiel v aplikácii sú ponechané v origináli (anglicky), pretože sa presne tak zapisujú do XML súborov a presne tak sú v aplikácii. Preložený je vysvetľujúci text. Všetky obrázky z originálu sú zachované.</p>
+
+<div class="toc">
+<strong>Obsah</strong>
+<ol>
+<li><a href="#k1">Kontrolór XML vlastných príkazov (XML Checker)</a></li>
+<li><a href="#k2">Prevod voľného textu na XML prispôsobenie</a></li>
+<li><a href="#k3">OLP Configuration – vlastné OLP príkazy</a></li>
+<li><a href="#k4">MotionConfiguration – vlastné pohybové príkazy</a></li>
+<li><a href="#k5">Upload (spätné načítanie) vlastných príkazov</a></li>
+<li><a href="#k6">DataConfiguration – generovanie FDAT, PDAT, LDAT, XDAT</a></li>
+<li><a href="#k7">Path Template Configuration – šablóny dráh</a></li>
+<li><a href="#k8">Download Templates Configuration – šablóny a kľúčové slová</a></li>
+<li><a href="#k9">Novinky podľa verzií</a></li>
+</ol>
+</div>
+
+<h2 id="k1">1. Kontrolór XML vlastných príkazov (Customized Command XML Checker)</h2>
+
+<p>Tento dokument popisuje XML elementy a atribúty, ktoré sú povolené v konfiguračných súboroch prispôsobenia.</p>
+
+<p>Aby ste ľahšie odhalili logické problémy (a niekedy aj syntaktické), môžete spustiť <strong>Customized Commands XML Checker</strong> (kliknite na ikonu v Process&nbsp;Simulate / RobotExpert). Použite ho vždy, keď opravíte XML súbory, na opätovné overenie ich platnosti. Môžete pracovať paralelne s aplikáciou Teach Pendant.</p>
+
+<figure><img src="obrazky/str009_1.png" alt="Customized Commands XML Checker"><figcaption>Dialóg Customized Commands XML Checker – výsledky kontroly jednotlivých konfiguračných sekcií (DataConfiguration, OlpConfiguration, MotionConfiguration, PathTemplateConfiguration, DownloadTemplatesConfiguration) s tlačidlami Help, Report, Encrypt, Check, Close.</figcaption></figure>
+
+<p>Po kliknutí na <strong>Check</strong> služba načíta XML v uvedenom poradí a prípadné chyby zobrazí v dialógu <strong>Result</strong>.</p>
+<p>Kliknutie na <strong>Help</strong> otvorí súbor pomocníka RoboticsCustomizedUIManual.</p>
+
+<h3>Šifrovanie vlastných XML súborov</h3>
+<p>Na ochranu vlastných XML súborov je možné použiť šifrovanie. Stlačte tlačidlo <strong>Encrypt</strong> a vyberte XML súbory, ktoré chcete zašifrovať. Zašifrované súbory sa vytvoria s príponou <code>XMLC</code> a môžete ich bezpečne posielať dodávateľom a subdodávateľom. Process&nbsp;Simulate / RobotExpert pracuje so súbormi XML aj XMLC transparentne.</p>
+<div class="note"><strong>Pozor:</strong> nenechávajte v priečinku obe verzie (XML aj XMLC) súčasne.</div>
+
+<h3>Report verzií radiča pre zašifrované XML súbory</h3>
+<p>Ak chcete zobraziť zoznam verzií radičov, ku ktorým sa zašifrované XML súbory vzťahujú, stlačte tlačidlo <strong>Report</strong>.</p>
+
+<h3>Dátum expirácie vlastných XML súborov</h3>
+<p>Aby boli organizácie chránené pred neobmedzeným používaním odcudzených vlastných XML súborov, je možné použiť element <code>ExpirationDate</code> a nastaviť jeho dátum. Po tomto čase už XML nie je platné a zobrazí sa chybová správa, napríklad:</p>
+<pre><code>&lt;RobotController Name="Abb-Rapid" ExpirationDate="15/03/2015"
+ExpirationMsg="The XML file has expired."&gt;</code></pre>
+
+<h2 id="k2">2. Prevod voľného textu na XML prispôsobenie (Free text to XML)</h2>
+<p>Editor OLP (OLP Editor) a prehliadač robotického programu (Robot Program Viewer) umožňujú zadávať OLP príkazy ako voľný text. Všetky robotické radiče – ABB, Fanuc, Kuka a ďalšie – podporujú automatický prevod príkazov zadaných ako voľný text na vlastné (custom) príkazy, ktoré existujú vo vlastnom XML.</p>
+<p>Zachováva sa tak možnosť pridávať príkazy cez určený dialóg navrhnutý v UI vrstve vlastného XML, ale zároveň sa dá použiť voľný text – ručné zadávanie alebo kopírovanie a vkladanie – pri zachovaní väzby na vlastný dialóg, aby sa dal príkaz jednoducho ďalej upravovať.</p>
+
+<h2 id="k3">3. OLP Configuration – vlastné OLP príkazy</h2>
+
+<h3>3.1 Východisko</h3>
+<p>Každý radič má vlastné štandardné OLP príkazy, ktoré sa dajú vytvoriť pomocou aplikácie Teach Pendant. Ak chcete vytvoriť nové OLP príkazy, zapíšete riadky do XML súborov.</p>
+
+<h3>3.2 Kostra súboru</h3>
+<p>XML súbory sa majú ukladať do: <code>&lt;PS installation&gt;\eMPower\Robotics\Olp\&lt;controller name&gt;\OLPConfiguration\*.xml</code></p>
+<pre><code>&lt;RobotController Name="Abb-Rapid"&gt;
+  &lt;RoboticParams&gt;
+  &lt;/RoboticParams&gt;
+  &lt;OlpCommands&gt;
+  &lt;/OlpCommands&gt;
+  &lt;OlpDialogs&gt;
+  &lt;/OlpDialogs&gt;
+&lt;/RobotController&gt;</code></pre>
+
+<h3>3.3 RobotController</h3>
+<p>Toto je koreň XML.</p>
+<p><strong>Všeobecná legenda početnosti:</strong></p>
+<table>
+<tr><th>Zápis</th><th>Význam</th></tr>
+<tr><td>1</td><td>Musí sa vyskytnúť práve raz</td></tr>
+<tr><td>1-*</td><td>Musí sa vyskytnúť aspoň raz</td></tr>
+<tr><td>0-*</td><td>Voliteľné, pri výskyte aspoň raz</td></tr>
+<tr><td>0-1</td><td>Voliteľné, pri výskyte práve raz</td></tr>
+<tr><td>@</td><td>XML atribút</td></tr>
+<tr><td>#</td><td>XML element</td></tr>
+</table>
+<p>Príklad: <code>&lt;RobotController Name="Abb-Rapid" Version="All"&gt;</code></p>
+<ul>
+<li><strong>[@, 1] Name</strong> – názov radiča.</li>
+<li><strong>[@, 0-1] Version</strong> – verzia radiča. Predvolene platí pre všetky verzie. Môže byť jedna alebo viac verzií oddelených čiarkami.<br>Príklad: <code>Version="3.2.s4c, 5.07.01.irc5, 4.0.118.s4cplus"</code></li>
+</ul>
+
+<h3>3.4 RoboticParams</h3>
+<ul>
+<li>Tento element obsahuje všetky robotické parametre (elementy <code>Param</code>), ktoré používajú vlastné OLP alebo pohybové príkazy. Process&nbsp;Simulate / RobotExpert načíta túto sekciu zo všetkých relevantných XML súborov (podľa radiča a verzie) do jednej vyrovnávacej pamäte, ktorú používajú všetky vlastné príkazy. <strong>Preto musí byť názov každého robotického parametra jedinečný.</strong></li>
+<li>Syntax komentára: <code>&lt;!-- Toto je komentár --&gt;</code></li>
+</ul>
+
+<h3>3.5 Param</h3>
+<p>Tento element obsahuje všetky informácie o jednom parametri v OLP príkaze, ktorý sa objaví v dialógu OLP príkazu. Jeden parameter môže používať viacero OLP príkazov, aj z iných XML súborov.</p>
+<ul>
+<li><strong>[@, 1] Name</strong> – názov parametra. Zobrazí sa na ľavej strane ovládacieho prvku.</li>
+<li><strong>[@, 1] ValueType</strong> – typ ovládacieho prvku. Platné hodnoty: <code>string</code>, <code>int</code>, <code>double</code>, <code>TxObject</code>.</li>
+<li><strong>[@, 1] Caption</strong> – zobrazovaný názov parametra v používateľskom rozhraní. Zobrazí sa vnútri OLP dialógu.</li>
+</ul>
+
+<h3>3.6 ValueType = int</h3>
+<ul>
+<li><strong>[@, 0-1] MaxVal</strong> – maximálna hodnota ovládacieho prvku.</li>
+<li><strong>[@, 0-1] MinVal</strong> – minimálna hodnota.</li>
+<li><strong>[@, 0-1] Default</strong> – predvolená hodnota.</li>
+</ul>
+
+<h3>3.7 ValueType = double</h3>
+<ul>
+<li><strong>[@, 0-1] MaxVal</strong> – maximálna hodnota.</li>
+<li><strong>[@, 0-1] MinVal</strong> – minimálna hodnota.</li>
+<li><strong>[@, 0-1] Default</strong> – predvolená hodnota.</li>
+</ul>
+<p><strong>Desatinné čísla:</strong></p>
+<ol>
+<li>V XML používajte výhradne bodku (<code>.</code>).
+<pre><code>&lt;Param Name="Speed" ValueType="double" MaxVal="20.7" MinVal="10.7" Default="11.8"/&gt;</code></pre></li>
+<li>V Process&nbsp;Simulate / RobotExpert sa používa oddeľovač podľa nastavenia „Miestne a jazykové nastavenia“ vášho počítača, teda <code>.</code> alebo <code>,</code>.</li>
+</ol>
+<figure><img src="obrazky/str015_1.png" alt="Dialóg s nemeckým desatinným oddeľovačom"><figcaption>Príklad pre nemecké lokálne nastavenie – hodnota sa v dialógu zobrazí s čiarkou (11,8000000000).</figcaption></figure>
+<ol start="3">
+<li>V rozhraní aplikácie reprezentácia simulačnej a download vrstvy používa bodku.</li>
+</ol>
+<figure><img src="obrazky/str015_2.png" alt="OLP príkaz s bodkou"><figcaption>V zozname OLP príkazov sa hodnota vypíše s desatinnou bodkou (Change Speed to:11.8).</figcaption></figure>
+<ol start="4">
+<li><strong>Tooltipy:</strong> ak chcete zistiť číselný rozsah parametra priamo v dialógu, podržte kurzor nad názvom parametra – zobrazí sa tooltip s rozsahom.</li>
+</ol>
+<figure><img src="obrazky/str015_3.png" alt="Tooltip s rozsahom hodnôt"><figcaption>Tooltip zobrazuje povolený rozsah parametra, tu [0 – 4].</figcaption></figure>
+
+<h3>3.8 ValueType = string</h3>
+<p><strong>[@, 0-1] Default</strong> – predvolená hodnota ovládacieho prvku.</p>
+<p><strong>Jednoduchý reťazec:</strong></p>
+<pre><code>&lt;Param Name="Comment" ValueType="string"/&gt;</code></pre>
+<figure><img src="obrazky/str016_1.png" alt="Jednoriadkové pole komentára"><figcaption>Jednoduchý reťazcový parameter – jednoriadkové textové pole.</figcaption></figure>
+<p><strong>Viacriadkový reťazec:</strong> <code>[@, 0-1] Multiline</code> – viacriadkové pole. Hodnota musí byť <code>true</code>.</p>
+<pre><code>&lt;Param Name="Comment" ValueType="string" Multiline="true"/&gt;</code></pre>
+<figure><img src="obrazky/str016_2.png" alt="Viacriadkové pole komentára"><figcaption>Viacriadkový reťazcový parameter (Multiline="true").</figcaption></figure>
+<p><strong>Reťazec s rozbaľovacím zoznamom (combo):</strong></p>
+<ul>
+<li><strong>[#, 0-1] ComboDef</strong> – všetky položky rozbaľovacieho zoznamu.</li>
+<li><strong>[#, 1-*] ElmDef</strong> – jedna položka zoznamu.</li>
+</ul>
+<pre><code>&lt;Param Name="Gun Pose" ValueType="string"&gt;
+  &lt;ComboDef&gt;
+    &lt;ElmDef/&gt;
+    &lt;ElmDef&gt;OPEN&lt;/ElmDef&gt;
+    &lt;ElmDef&gt;CLOSE&lt;/ElmDef&gt;
+    &lt;ElmDef&gt;SEMI&lt;/ElmDef&gt;
+  &lt;/ComboDef&gt;
+&lt;/Param&gt;</code></pre>
+<figure><img src="obrazky/str017_1.png" alt="Combo box Gun Pose"><figcaption>Rozbaľovací zoznam s hodnotami OPEN, CLOSE, SEMI a prázdnou položkou.</figcaption></figure>
+<p>Pre prázdny riadok pridajte <code>&lt;ElmDef/&gt;</code>.</p>
+
+<h3>3.9 MaxLength – voliteľný atribút pre reťazcový parameter</h3>
+<p>Nastavuje maximálny počet znakov, ktoré možno ručne zadať do textového poľa. Napríklad:</p>
+<pre><code>&lt;Param Name="SeamName" ValueType="string" MaxLength="7"&gt;&lt;/Param&gt;</code></pre>
+<p><strong>Dynamický combo reťazec:</strong> <code>[@, 0-1] DynamicCombo</code> – načíta sa z radiča za behu. Použiť možno ľubovoľný parameter zo súborov <code>C:\ProgramData\Tecnomatix\Process Simulate\&lt;PS Version&gt;\Robotics\PathEditor\AvailableColumns\*.xml</code> v príslušnej sekcii radiča, ktorý je označený ako „combobox“. Hodnota musí byť <code>"true"</code>.</p>
+<pre><code>&lt;Param Name="Interp" ValueType="string" DynamicCombo="true"/&gt;</code></pre>
+<figure><img src="obrazky/str017_2.png" alt="Dynamický combo box Interp"><figcaption>Dynamický zoznam načítaný z radiča – hodnoty PTP, LIN, CIRC, KLIN.</figcaption></figure>
+
+<h3>3.10 Atribút LinkTo</h3>
+<p><strong>[@, 0-1] LinkTo</strong> – vloží názvy póz robota, zvarovacích klieští alebo chápadla do rozbaľovacieho zoznamu.</p>
+<pre><code>&lt;Param Name="RobotPose" ValueType="string"&gt;
+  &lt;ComboDef LinkTo="Robot.Poses"/&gt;
+&lt;/Param&gt;
+
+&lt;Param Name="GunPose" ValueType="string"&gt;
+  &lt;ComboDef LinkTo="ActiveGun.Poses"/&gt;
+&lt;/Param&gt;</code></pre>
+<figure><img src="obrazky/str018_1.png" alt="Dialóg UsePose s pózami"><figcaption>Dialóg s pózami robota a klieští načítanými cez LinkTo.</figcaption></figure>
+<p><code>ActiveGun.Poses</code> načíta pózy klieští, inak pózy chápadla.</p>
+
+<h3>3.11 ValueType = TxObject</h3>
+<p>Objekt môže byť iba: <code>compound</code>, <code>part_instance</code>, <code>part_physical_appearance</code>, <code>part_prototype_assignment</code>, <code>compound_resource</code>, <code>resource_instance</code>, <code>resource_prototype_assignment</code> a akýkoľvek fyzický objekt v rozsahu komponentu.</p>
+<p><strong>Bez filtra:</strong></p>
+<pre><code>&lt;Param Name="RobotOrGun" ValueType="TxObject"/&gt;</code></pre>
+<figure><img src="obrazky/str018_2.png" alt="Výber objektu bez filtra"><figcaption>Parameter typu TxObject bez filtra – vybraný objekt sa zvýrazní zelenou.</figcaption></figure>
+<p><strong>S konkrétnymi typmi výberu:</strong></p>
+<ul>
+<li><strong>[#, 0-1] PickTypes</strong> – kolekcia elementov PickType.</li>
+<li><strong>[#, 0-*] PickType</strong> – musí ísť o triedu alebo rozhranie .NET API – pozrite manuál <em>Tecnomatix .NET.chm</em>.</li>
+</ul>
+<pre><code>&lt;Param Name="Location" ValueType="TxObject"&gt;
+  &lt;PickTypes&gt;
+    &lt;PickType&gt;TxRoboticViaLocationOperation&lt;/PickType&gt;
+    &lt;PickType&gt;TxWeldLocationOperation&lt;/PickType&gt;
+  &lt;/PickTypes&gt;
+&lt;/Param&gt;</code></pre>
+<figure><img src="obrazky/str019_1.png" alt="Výber lokácie podľa PickTypes"><figcaption>Výber obmedzený na zadané typy objektov.</figcaption></figure>
+<p><strong>So zoznamom filtrovaných objektov:</strong> <code>[@, 0-1] ShowList</code> – zobrazí v ovládacom prvku zoznam filtrovaných objektov, hodnota musí byť <code>"true"</code>.</p>
+<pre><code>&lt;Param Name="Location" ValueType="TxObject"&gt;
+  &lt;PickTypes ShowList="true"&gt;
+    &lt;PickType&gt;TxRoboticViaLocationOperation&lt;/PickType&gt;
+    &lt;PickType&gt;TxWeldLocationOperation&lt;/PickType&gt;
+    &lt;PickType&gt;TxGenericRoboticLocationOperation&lt;/PickType&gt;
+  &lt;/PickTypes&gt;
+&lt;/Param&gt;</code></pre>
+<figure><img src="obrazky/str019_2.png" alt="Zoznam filtrovaných lokácií"><figcaption>ShowList="true" – rozbaľovací zoznam vyfiltrovaných objektov (via2, via3, via4).</figcaption></figure>
+<p><strong>S konkrétnym typom validátora:</strong> <code>[@, 0-1] TxValidatorType</code> – jedna z hodnôt:</p>
+<table>
+<tr><th>Hodnota</th><th>Čo overuje</th></tr>
+<tr><td>AnyLocatableObject</td><td>Akýkoľvek umiestniteľný objekt. Predvolený validátor ovládacích prvkov.</td></tr>
+<tr><td>Component</td><td>Iba komponenty</td></tr>
+<tr><td>Group</td><td>Iba skupiny</td></tr>
+<tr><td>Geometry</td><td>Iba geometrie</td></tr>
+<tr><td>Frame</td><td>Iba súradnicové systémy (frames)</td></tr>
+<tr><td>Note</td><td>Iba poznámky</td></tr>
+<tr><td>Device</td><td>Iba zariadenia</td></tr>
+<tr><td>Robot</td><td>Iba roboty</td></tr>
+<tr><td>Operation</td><td>Iba operácie</td></tr>
+<tr><td>RoboticLocationOperation</td><td>Iba robotické lokačné operácie</td></tr>
+<tr><td>WeldLocationOperation</td><td>Iba zvarové lokačné operácie (vrátane zvarových bodov, ktoré ešte neboli premietnuté)</td></tr>
+<tr><td>PhysicalCollection</td><td>Iba skupiny lokácií a komponenty</td></tr>
+<tr><td>LocationOrOrderedCompoundOperation</td><td>Iba lokačné operácie a usporiadané zložené operácie</td></tr>
+<tr><td>Gripper</td><td>Iba chápadlá</td></tr>
+<tr><td>LocationOperation</td><td>Iba lokačné operácie</td></tr>
+<tr><td>Gun</td><td>Iba zvarovacie kliešte</td></tr>
+<tr><td>MfgFeature</td><td>Iba Mfg Features</td></tr>
+<tr><td>PhysicalOrLogicalCollection</td><td>Iba skupiny, komponenty a logické kolekcie</td></tr>
+<tr><td>CollisionPairItem</td><td>Iba položky kolíznych dvojíc</td></tr>
+</table>
+<pre><code>&lt;Param Name="Location" ValueType="TxObject" TxValidatorType="Frame"/&gt;</code></pre>
+<figure><img src="obrazky/str021_1.png" alt="Výber obmedzený na frame"><figcaption>Validátor Frame – prijme sa iba súradnicový systém (tu fr1).</figcaption></figure>
+
+<h3>3.12 Signály robota</h3>
+<p>V dialógoch, ktoré si prispôsobujete, môžete používať signály s nasledujúcou syntaxou:</p>
+<pre><code>&lt;Param Name="ToSignal" ValueType="TxObject"&gt;
+  &lt;PickTypes ShowList="true"&gt;
+    &lt;PickType&gt;TxPlcToRobotSignal&lt;/PickType&gt;
+  &lt;/PickTypes&gt;
+&lt;/Param&gt;
+&lt;Param Name="FromSignal" ValueType="TxObject"&gt;
+  &lt;PickTypes ShowList="true"&gt;
+    &lt;PickType&gt;TxPlcFromRobotSignal&lt;/PickType&gt;
+  &lt;/PickTypes&gt;
+&lt;/Param&gt;
+&lt;Param Name="AllSignal" ValueType="TxObject"&gt;
+  &lt;PickTypes ShowList="true"&gt;
+    &lt;PickType&gt;TxPlcToRobotSignal&lt;/PickType&gt;
+    &lt;PickType&gt;TxPlcFromRobotSignal&lt;/PickType&gt;
+  &lt;/PickTypes&gt;
+&lt;/Param&gt;</code></pre>
+<figure><img src="obrazky/str021_2.png" alt="Dialóg so signálmi"><figcaption>Dialóg s parametrami typu signál: ToSignal, FromSignal, AllSignal.</figcaption></figure>
+
+<h4>Príznaky (flags) pre signály robota</h4>
+<p>Kľúčovým slovom <code>SignalType</code> môžete prispôsobiť typy signálov, ktoré sa zobrazia v rozbaľovacom zozname <code>DigitalOutputSignal</code>. Príznak <code>AddInfo</code> umožňuje uviesť jeden alebo viac stĺpcov, ktorých hodnoty sa majú zobraziť. Príznak <code>AddInfoSeparator</code> umožňuje zmeniť oddeľovač z predvolenej dvojbodky.</p>
+<ul>
+<li><strong>Filtrovanie zoznamu signálov podľa SignalType</strong> (napríklad „bool“ len pre logické signály).</li>
+</ul>
+<div class="note"><strong>Poznámka:</strong> Pre parameter <code>DigitalOutputSignal</code> môžete do rozbaľovacieho zoznamu pridať filter typu signálu – napríklad pre vstup alebo výstup pridať <code>bool</code>, <code>byte</code>, <code>word</code> atď. pomocou kľúčového slova <code>PickTypes SignalType</code>.<br>
+<code>SignalType</code> je relevantný iba pre typy <code>TxPlcFromRobotSignal</code> alebo <code>TxPlcToRobotSignal</code>. Možné hodnoty sú osem typov signálov podporovaných v Process&nbsp;Simulate: <code>bool, byte, int, dint, word, dword, real, lreal</code>. Dva a viac typov možno kombinovať čiarkou:
+<pre><code>&lt;PickType SignalType="int,dint"&gt;TxPlcToRobotSignal&lt;/PickType&gt;</code></pre>
+Tento riadok obmedzí zoznam signálov len na typy INT a DINT.</div>
+<ul>
+<li><strong>Zobrazenie doplňujúcich informácií</strong> vedľa názvu signálu pomocou príznaku <code>AddInfo</code>.</li>
+</ul>
+<div class="note"><strong>Poznámka:</strong> <code>AddInfo</code> je relevantný iba pre typy <code>TxPlcFromRobotSignal</code> alebo <code>TxPlcToRobotSignal</code>. Možné hodnoty sú atribúty signálu dostupné v Signal Viewer:
+<ul>
+<li><strong>IEC</strong> – adresa v IEC formáte, ako v Signal Viewer</li>
+<li><strong>Type</strong> – bool, byte, int, dint, word, dword, real, lreal</li>
+<li><strong>Comment</strong> – reťazec</li>
+</ul>
+Nasledujúci zápis zobrazí všetky tri:
+<pre><code>&lt;PickType AddInfo="type,comment,IEC"&gt;TxPlcFromRobotSignal&lt;/PickType&gt;</code></pre></div>
+<figure><img src="obrazky/str022_1.png" alt="XML deklarácia DigitalOutputSignal"><figcaption>Obe kľúčové slová (AddInfo aj SignalType) v deklarácii parametra DigitalOutputSignal. Parameter je typu TxObject a v rozhraní sa prejaví ako rozbaľovacia ponuka so všetkými vstupnými signálmi robota, ku ktorému je OLP príkaz priradený.</figcaption></figure>
+<figure><img src="obrazky/str023_1.png" alt="Zoznam signálov s doplňujúcimi informáciami"><figcaption>Zoznam signálov v dialógu vedľa okna Signal Viewer – doplňujúce informácie sú od názvu predvolene oddelené dvojbodkou.</figcaption></figure>
+<p>Oddeľovač možno zmeniť úpravou príznaku <code>AddInfoSeperator</code>. V príklade nižšie sa mení z dvojbodky na šípku:</p>
+<pre><code>&lt;PickType SignalType="bool" AddInfo="comment" AddInfoSeperator="--&gt;"&gt;
+  TxPlcFromRobotSignal&lt;/PickType&gt;</code></pre>
+<figure><img src="obrazky/str023_2.png" alt="Zoznam signálov so šípkou ako oddeľovačom"><figcaption>Rovnaký zoznam s oddeľovačom zmeneným na „--&gt;“.</figcaption></figure>
+
+<h3>3.13 Viacero deklarácií premenných v jednej sekcii Param</h3>
+<p>Ak majú parametre identické deklarácie, zapíšte ich do jednej sekcie <code>Param</code> a oddeľte čiarkou.</p>
+<p>Namiesto štyroch samostatných blokov:</p>
+<pre><code>&lt;Param Name="Pick_1" ValueType="TxObject"&gt;
+  &lt;PickTypes ShowList="true"&gt;
+    &lt;PickType&gt;TxRoboticProgram&lt;/PickType&gt;
+  &lt;/PickTypes&gt;
+&lt;/Param&gt;
+&lt;!-- ... to isté pre Pick_2, Pick_3, Pick_4 ... --&gt;</code></pre>
+<p>zapíšte:</p>
+<pre><code>&lt;Param Name="Pick_1, Pick_2, Pick_3, Pick_4" ValueType="TxObject"&gt;
+  &lt;PickTypes ShowList="true"&gt;
+    &lt;PickType&gt;TxRoboticProgram&lt;/PickType&gt;
+  &lt;/PickTypes&gt;
+&lt;/Param&gt;</code></pre>
+<p>Ak sa má tomuto automatickému rozdeleniu podľa čiarky zabrániť (názov parametra sám obsahuje čiarku), použite atribút <code>SingleName</code>:</p>
+<pre><code>&lt;Param SingleName="true" Name="SDelay time (0,1-32s)" ValueType="double"&gt;&lt;/Param&gt;</code></pre>
+
+<h3>3.14 Použitie hodnôt kĺbov v číselnom ovládacom prvku</h3>
+<p>Na priradenie konkrétnych hodnôt kĺbu použite:</p>
+<pre><code>MaxVal  = "&lt;Device&gt;.&lt;Joint Name&gt;.Max"
+MinVal  = "&lt;Device&gt;.&lt;Joint Name&gt;.Min"
+Default = "&lt;Device&gt;.&lt;Joint Name&gt;.Current"</code></pre>
+<p>Príklad:</p>
+<pre><code>&lt;Param Name="AnvilRotationVal" ValueType="double"
+  MaxVal="LowerRam_G2000.Rot.Max" MinVal="LowerRam_G2000.Rot.Min"
+  Default="LowerRam_G2000.Rot.Current"&gt;&lt;/Param&gt;</code></pre>
+<p>Hodnoty sú výhradne v stupňoch alebo milimetroch (podľa typu kĺbu).</p>
+
+<h3>3.15 OlpCommands</h3>
+<p>Tento element obsahuje všetky OLP príkazy (elementy <code>Command</code>) použité vlastnými OLP príkazmi. Aplikácia načíta túto sekciu zo všetkých relevantných XML súborov (podľa radiča a verzie) do jednej vyrovnávacej pamäte. <strong>Názov každého OLP príkazu musí byť preto jedinečný.</strong></p>
+
+<h3>3.16 Command</h3>
+<p>Reprezentuje jeden vlastný OLP príkaz; obsahuje názov príkazu a názvy parametrov.</p>
+<p><strong>[@, 1] Name</strong> – názov vlastného OLP príkazu.</p>
+
+<h3>3.17 RoboticParamRef</h3>
+<p>Obsahuje zoznam parametrov (elementy <code>Param</code> a <code>Layers</code>), ktoré sa vzťahujú na vlastný OLP príkaz.</p>
+
+<h3>3.18 Param (v rámci RoboticParamRef)</h3>
+<p>Hodnotou tohto elementu je názov jedného parametra zo zoznamu <code>RoboticParams</code>. (Názov parametra môžete vybrať aj z ľubovoľného XML súboru toho istého radiča a verzie.)</p>
+<p>Predvolene musí používateľ hodnotu parametra zadať (označené hviezdičkou); inak zostane tlačidlo <strong>OK</strong> neaktívne.</p>
+<figure><img src="obrazky/str026_1.png" alt="Povinný parameter s neaktívnym OK"><figcaption>Povinný parameter je označený hviezdičkou a tlačidlo OK zostáva neaktívne, kým nie je vyplnený.</figcaption></figure>
+
+<h3>3.19 Optional</h3>
+<p><strong>[@, 0-1] Optional</strong> – ak sa použije, hodnota musí byť <code>"true"</code>.</p>
+<pre><code>&lt;Param Optional="true"&gt;Location&lt;/Param&gt;</code></pre>
+<figure><img src="obrazky/str026_2.png" alt="Voliteľný parameter s aktívnym OK"><figcaption>Voliteľný parameter bez hviezdičky – tlačidlo OK je aktívne aj bez vyplnenia.</figcaption></figure>
+
+<h3>3.20 UseLocationParamVal</h3>
+<p><strong>[@, 0-1] UseLocationParamVal</strong> – ak sa použije, hodnota musí byť <code>true</code>:</p>
+<pre><code>&lt;Command Name="WaitTime"&gt;
+  &lt;RoboticParamRef&gt;
+    &lt;Param UseLocationParamVal="true"&gt;SW_WAIT_TIME&lt;/Param&gt;
+  &lt;/RoboticParamRef&gt;
+  ...</code></pre>
+<p>Pri vytváraní nových OLP príkazov tak možno využiť informáciu, ktorá už existuje v robotickom parametri aktuálnej lokácie. Je to veľmi užitočné po importe MFG atribútov do robotických parametrov lokácií. Pozrite kapitolu o vzťahu medzi Mfg atribútmi a robotickými parametrami zvarových lokácií a operácií zvarových húseníc v dokumentácii Process&nbsp;Simulate / RobotExpert.</p>
+
+<h3>3.21 Layers (vrstvy)</h3>
+<p>Tento element reprezentuje každý vlastný OLP príkaz v troch rôznych podobách (UI, simulácia, download).</p>
+
+<h3>3.22 UILayer</h3>
+<div class="note"><strong>Poznámka:</strong> element <code>UILayer</code> sa má vypisovať iba ako jeden riadok.</div>
+<p>Reprezentuje jeden vlastný OLP príkaz v:</p>
+<ol>
+<li>Teach Pendante radiča</li>
+</ol>
+<figure><img src="obrazky/str027_1.png" alt="OLP príkaz v Teach Pendante"><figcaption>Zobrazenie vlastného príkazu v zozname OLP Commands v Teach Pendante.</figcaption></figure>
+<ol start="2">
+<li>Editore dráh (Path Editor)</li>
+</ol>
+<figure><img src="obrazky/str027_2.png" alt="OLP príkaz v Path Editore"><figcaption>Ten istý príkaz v stĺpci OLP Commands v Path Editore.</figcaption></figure>
+
+<h3>3.23 Line</h3>
+<p>Reprezentuje jeden riadok.</p>
+
+<h3>3.24 Item</h3>
+<p>Každý <code>Item</code> sa vypíše do riadka.</p>
+<p><strong>Typ „const“:</strong></p>
+<ol>
+<li><code>&lt;Item Type="const"&gt;The Robot is:&lt;/Item&gt;</code> – vypíše hodnotu elementu ako konštantný reťazec.</li>
+<li><code>&lt;Item Type="const" xml:space="preserve"&gt;&lt;/Item&gt;</code> – vypíše medzery.</li>
+<li><code>&lt;Item Type="const" Conditional="true" CondParam="Robot"&gt;The Robot is:&lt;/Item&gt;</code></li>
+</ol>
+<p><strong>[@, 0-1] Conditional, CondParam</strong>: <code>CondParam</code> má obsahovať parameter s atribútom <code>Optional</code>. Pri <code>Conditional="true"</code> sa reťazec vypíše, iba ak parameter „Robot“ má hodnotu; pri <code>Conditional="false"</code> sa vypíše, iba ak hodnotu nemá.</p>
+<p><strong>Typ „parameter“:</strong></p>
+<ol>
+<li><code>&lt;Item Type="parameter"&gt;Robot&lt;/Item&gt;</code> – vypíše hodnotu parametra „Robot“.</li>
+<li><code>&lt;Item Type="parameter" Conditional="true" CondParam="Robot"&gt;Robot&lt;/Item&gt;</code> – vypíše sa iba ak má parameter hodnotu.</li>
+<li><code>&lt;Item Type="parameter" Conditional="true" CondParam="Robot"&gt;Gun&lt;/Item&gt;</code> – tento tvar je tiež platný (hodnota Gun sa vypíše, iba ak má hodnotu parameter „Robot“) a v niektorých prípadoch je užitočný.</li>
+</ol>
+<p><strong>Typ „dynamicParameter“:</strong></p>
+<pre><code>&lt;Item Type="dynamicParameter"&gt;Interp&lt;/Item&gt;</code></pre>
+<p>Za behu načíta hodnotu „Interp“ z radiča a vypíše ju. Hodnotou môže byť:</p>
+<ul>
+<li>ľubovoľný dynamický parameter definovaný v sekcii konkrétneho radiča v <code>C:\ProgramData\Tecnomatix\Process Simulate\&lt;PS Version&gt;\Robotics\PathEditor\AvailableColumns\*.xml</code>,</li>
+<li>ľubovoľný parameter z doplnkových sekcií toho istého súboru:
+<ul>
+<li><code>Dynamic Parameters - OlpUtil</code></li>
+<li><code>Dynamic Parameters - &lt;Controller&gt;Lib</code> (nie je dostupné pre všetky radiče)</li>
+<li><code>Dynamic Parameters - &lt;Controller&gt;</code> (nie je dostupné pre všetky radiče)</li>
+</ul></li>
+</ul>
+
+<h3>3.25 Typ položky „expression“</h3>
+<p>Ak potrebujete zobraziť výsledok matematického výpočtu namiesto samotnej hodnoty parametra, použite typ <code>expression</code>:</p>
+<pre><code>&lt;Item Type="expression"&gt;&lt;![CDATA['IntNum' * 60]]&gt;&lt;/Item&gt;</code></pre>
+<p>Bežné použitie je v <code>UILayer</code> alebo <code>SimulationLayer</code>, keď potrebujete zobraziť iné (číselné) jednotky než v <code>DownloadLayer</code>.</p>
+<p>Ak nastavíte atribút <code>Context</code> na <code>download</code>, dajú sa vykonávať aritmetické výpočty nad stiahnutými (download) hodnotami parametrov. Napríklad pri takto definovaných parametroch A a B:</p>
+<pre><code>&lt;Param Name="ParameterA" ValueType="string" Default="Close"&gt;
+  &lt;ComboDef&gt;
+    &lt;ElmDef DownloadRepresentation="1"&gt;Close&lt;/ElmDef&gt;
+    &lt;ElmDef DownloadRepresentation="2"&gt;Open&lt;/ElmDef&gt;
+    &lt;ElmDef DownloadRepresentation="3"&gt;Hold&lt;/ElmDef&gt;
+  &lt;/ComboDef&gt;
+&lt;/Param&gt;
+&lt;Param Name="ParameterB" ValueType="string" Default="Open"&gt;
+  &lt;ComboDef&gt;
+    &lt;ElmDef DownloadRepresentation="1"&gt;Close&lt;/ElmDef&gt;
+    &lt;ElmDef DownloadRepresentation="2"&gt;Open&lt;/ElmDef&gt;
+    &lt;ElmDef DownloadRepresentation="3"&gt;Hold&lt;/ElmDef&gt;
+  &lt;/ComboDef&gt;
+&lt;/Param&gt;</code></pre>
+<p>sa stiahnuté hodnoty vyhodnotia vo výraze:</p>
+<pre><code>&lt;Item Type="expression" Context="download"&gt;&lt;![CDATA[('ParametreA'+'ParametreB')]]&gt;&lt;/Item&gt;</code></pre>
+
+<h3>3.26 ConvertToInt</h3>
+<p>Ak potrebujete použiť celočíselnú hodnotu parametra typu double, použite atribút <code>ConvertToInt</code> s hodnotou <code>true</code>:</p>
+<pre><code>&lt;Item Type="parameter" ConvertToInt="true"&gt;FY&lt;/Item&gt;
+&lt;Item Type="dynamicParameter" ConvertToInt="true"&gt;Speed&lt;/Item&gt;</code></pre>
+
+<h3>3.27 DigitsAfterPoint</h3>
+<p>Na zaokrúhlenie počtu desatinných miest parametra typu double použite atribút <code>DigitsAfterPoint</code> s kladnou číselnou hodnotou:</p>
+<pre><code>&lt;Item Type="parameter" DigitsAfterPoint="3"&gt;FY&lt;/Item&gt;
+&lt;Item Type="dynamicParameter" DigitsAfterPoint="3"&gt;Speed&lt;/Item&gt;</code></pre>
+<p>Napríklad 123.456 sa vypíše ako 123.46. Atribút sa dá použiť aj pre výrazy:</p>
+<pre><code>&lt;Item Type="expression" DigitsAfterPoint="3"&gt;&lt;![CDATA[('WeldPointX'/25.4)]]&gt;&lt;/Item&gt;</code></pre>
+
+<h3>3.28 UseFixedDecimalDigits</h3>
+<p>Niektoré radiče vyžadujú, aby hodnoty parametrov typu double mali rovnaký počet desatinných miest. Napríklad:</p>
+<pre><code>Param A = 5.1234
+Param B = 5</code></pre>
+<p>Pri <code>DigitsAfterPoint="2"</code> vznikne:</p>
+<pre><code>Param A = 5.12
+Param B = 5</code></pre>
+<p>Ak radič vyžaduje chýbajúce miesta (5.00), nastane chyba. Preto zápis:</p>
+<pre><code>&lt;Item Type="parameter" DigitsAfterPoint="2" UseFixedDecimalDigits="true"&gt;A&lt;/Item&gt;
+&lt;Item Type="parameter" DigitsAfterPoint="2" UseFixedDecimalDigits="true"&gt;B&lt;/Item&gt;</code></pre>
+<p>vráti:</p>
+<pre><code>Param A = 5.12
+Param B = 5.00</code></pre>
+
+<h3>3.29 Atribút DownloadRepresentation namiesto switch a case</h3>
+<p>Ak potrebujete ten istý reťazcový combo parameter reprezentovať v každej vrstve inou hodnotou (napr. inú hodnotu v UI vrstve než v download vrstve), použite <code>DownloadRepresentation</code> namiesto dlhých konštrukcií switch/case.</p>
+<p>Namiesto:</p>
+<pre><code>&lt;RoboticParams&gt;
+  &lt;Param Name="A01_JobMode" ValueType="string" Default="Started"&gt;
+    &lt;ComboDef&gt;
+      &lt;ElmDef&gt;Started&lt;/ElmDef&gt;
+      &lt;ElmDef&gt;Done&lt;/ElmDef&gt;
+      ...
+    &lt;/ComboDef&gt;
+  &lt;/Param&gt;
+&lt;/RoboticParams&gt;
+...
+&lt;DownloadLayer&gt;
+  &lt;Line&gt;
+    &lt;Switch ParamName="A01_JobMode"&gt;
+      &lt;Case Value="Started"&gt;&lt;Item Type="const"&gt;1&lt;/Item&gt;&lt;/Case&gt;
+      &lt;Case Value="Done"&gt;&lt;Item Type="const"&gt;2&lt;/Item&gt;&lt;/Case&gt;
+    &lt;/Switch&gt;
+  &lt;/Line&gt;
+&lt;/DownloadLayer&gt;</code></pre>
+<p>stačí napísať:</p>
+<pre><code>&lt;RoboticParams&gt;
+  &lt;Param Name="A01_JobMode" ValueType="string" Default="Started"&gt;
+    &lt;ComboDef&gt;
+      &lt;ElmDef DownloadRepresentation="1"&gt;Started&lt;/ElmDef&gt;
+      &lt;ElmDef DownloadRepresentation="2"&gt;Done&lt;/ElmDef&gt;
+      ...
+    &lt;/ComboDef&gt;
+  &lt;/Param&gt;
+&lt;/RoboticParams&gt;
+...
+&lt;DownloadLayer&gt;
+  &lt;Line&gt;
+    &lt;Item Type="parameter" Context="download"&gt;A01_JobMode&lt;/Item&gt;
+  &lt;/Line&gt;
+&lt;/DownloadLayer&gt;</code></pre>
+
+<h3>3.30 Switch vnútri riadka</h3>
+<p>Reprezentuje programový prepínač vnútri riadka. Naraz sa dá použiť iba jedna úroveň (nie vnorené) s viacerými prípadmi (case).</p>
+
+<h3>3.31 Case</h3>
+<p>Reprezentuje programový prípad. Každý <code>Case</code> má obsahovať <code>[#, 0-*] Item</code>. Pre predvolenú hodnotu použite <code>[#, 0-1] Default</code>.</p>
+<p><strong>Príklad 1:</strong></p>
+<pre><code>&lt;Line&gt;
+  &lt;Switch ParamName="Location"&gt;
+    &lt;Case Value="via1"&gt;
+      &lt;Item Type="const"&gt;The Location is: via1&lt;/Item&gt;
+    &lt;/Case&gt;
+    &lt;Case Value="via2"&gt;
+      &lt;Item Type="const"&gt;The Location is:&lt;/Item&gt;
+      &lt;Item Type="parameter"&gt;Location&lt;/Item&gt;
+    &lt;/Case&gt;
+    &lt;Case&gt;
+      &lt;Default&gt;
+        &lt;Item Type="const"&gt;The Location is: Default&lt;/Item&gt;
+      &lt;/Default&gt;
+    &lt;/Case&gt;
+  &lt;/Switch&gt;
+&lt;/Line&gt;</code></pre>
+<p><strong>Príklad 2</strong> (prepínanie podľa dynamického parametra):</p>
+<pre><code>&lt;Switch ParamName="Attr:RRS_ZONE_NAME" DynamicParameter="true"&gt;
+  &lt;Case Value="fine"&gt;&lt;Item Type="const"&gt;G60&lt;/Item&gt;&lt;/Case&gt;
+  &lt;Case Value="nodecel"&gt;&lt;Item Type="const"&gt;G64&lt;/Item&gt;&lt;/Case&gt;
+&lt;/Switch&gt;</code></pre>
+<p><strong>Príklad 3</strong> (prázdna hodnota nevypíše nič):</p>
+<pre><code>&lt;Switch ParamName="Load Data"&gt;
+  &lt;Case Value=""/&gt;
+  &lt;Case&gt;
+    &lt;Default&gt;
+      &lt;Item Type="const"&gt;\PartLoad:=&lt;/Item&gt;
+      &lt;Item Type="parameter"&gt;Load Data&lt;/Item&gt;
+    &lt;/Default&gt;
+  &lt;/Case&gt;
+&lt;/Switch&gt;</code></pre>
+
+<h3>3.32 Switch mimo riadka</h3>
+<p>Reprezentuje programový prepínač mimo riadka. Aj tu platí iba jedna úroveň (bez vnárania).</p>
+<pre><code>&lt;Switch ParamName="Location"&gt;
+  &lt;Case Value="via1"&gt;
+    &lt;Line&gt;
+      &lt;Item Type="const"&gt;The location is:&lt;/Item&gt;
+      &lt;Item Type="parameter"&gt;Location&lt;/Item&gt;
+    &lt;/Line&gt;
+    &lt;Line&gt;
+      &lt;Item Type="const"&gt;The Speed is:&lt;/Item&gt;
+      &lt;Item Type="parameter"&gt;Speed&lt;/Item&gt;
+    &lt;/Line&gt;
+  &lt;/Case&gt;
+  &lt;Case&gt;
+    &lt;Default&gt;
+      &lt;Line&gt;&lt;Item Type="const"&gt;Default value&lt;/Item&gt;&lt;/Line&gt;
+    &lt;/Default&gt;
+  &lt;/Case&gt;
+&lt;/Switch&gt;</code></pre>
+
+<h3>3.33 If / ElseIf / Else so zloženými výrazmi</h3>
+<p>Na zápis zložitých podmienok (s viac ako jedným parametrom), na použitie signálov v podmienkach a pre ďalšie prípady použite formát <code>If-ElseIf-Else</code>.</p>
+<p>Keďže niektoré znaky nie sú v XML platné, odporúča sa podmienku zabaliť do sekcie CDATA: <code>&lt;![CDATA[&lt;podmienka&gt;]]&gt;</code>. Každý parameter aj dynamický parameter treba obaliť apostrofmi, napr. <code>'Speed1'</code>.</p>
+<p><strong>Vyhodnocovanie výrazov podporuje:</strong></p>
+<ul>
+<li>AND (<code>And</code>, <code>and</code>, <code>&amp;</code>)</li>
+<li>OR (<code>Or</code>, <code>or</code>, <code>|</code>)</li>
+<li>XOR (<code>Xor</code>, <code>xor</code>)</li>
+<li>NOT (<code>Not</code>, <code>not</code>, <code>!</code>)</li>
+<li><code>==</code></li>
+<li><code>&lt;&gt;</code> (<code>!=</code>)</li>
+<li><code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code></li>
+<li><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code></li>
+<li><code>TRUE</code> / <code>FALSE</code></li>
+<li>signály pre simulačnú vrstvu</li>
+<li>zátvorky (ľavá, pravá)</li>
+<li><code>NULL</code> – iba pre dynamické parametre</li>
+</ul>
+<p><strong>Príklad:</strong></p>
+<pre><code>&lt;If&gt;
+  &lt;![CDATA[('Speed1'&lt;10) &amp;&amp; ('Speed2'&lt;=10) &amp;&amp; ('Zone'!=NULL) &amp;&amp; ('Fclo'==FALSE)]]&gt;
+  &lt;Line&gt;
+    &lt;!--ToDo - add your items--&gt;
+  &lt;/Line&gt;
+&lt;/If&gt;
+&lt;ElseIf&gt;
+  &lt;![CDATA[('Speed1'&gt;10) &amp;&amp; ('Speed2'&gt;10) &amp;&amp; ('Zone'==fine)]]&gt;
+  &lt;Line&gt;
+    &lt;!--ToDo - add your items--&gt;
+  &lt;/Line&gt;
+&lt;/ElseIf&gt;
+&lt;Else&gt;
+  &lt;Line&gt;
+    &lt;!--ToDo - add your items--&gt;
+  &lt;/Line&gt;
+&lt;/Else&gt;</code></pre>
+<p>Podmienku možno umiestniť aj dovnútra riadka:</p>
+<pre><code>&lt;Line&gt;
+  &lt;If&gt;
+    &lt;![CDATA[('Speed1'&lt;10) &amp;&amp; ('Speed2'&lt;=10)]]&gt;
+    &lt;!--ToDo - add your items--&gt;
+  &lt;/If&gt;
+  &lt;ElseIf&gt;
+    &lt;![CDATA[('Speed1'&gt;10) &amp;&amp; ('Speed2'&gt;10)]]&gt;
+    &lt;!--ToDo - add your items--&gt;
+  &lt;/ElseIf&gt;
+  &lt;Else&gt;
+    &lt;!--ToDo - add your items--&gt;
+  &lt;/Else&gt;
+&lt;/Line&gt;</code></pre>
+<div class="note">Vnorené <code>IF</code> (napríklad so switchom) nie je povolené. Viacero vetiev <code>ElseIf</code> povolené je.</div>
+
+<h3>3.34 Simulation Layer (simulačná vrstva)</h3>
+<p>Rovnaké možnosti ako <code>UILayer</code>, podporuje viacero riadkov.</p>
+<p><strong>Definícia:</strong> v simulačnej vrstve vlastného OLP príkazu definujete, ako sa príkaz bude simulovať. Keď radič počas simulácie narazí na vlastný OLP príkaz, nahradí ho jeho simulačnou vrstvou a interpretuje túto vrstvu. Do simulačnej vrstvy môžete napísať akýkoľvek elementárny príkaz (jeden na sekciu <code>&lt;Line&gt;...&lt;/Line&gt;</code>), ktorému radič rozumie:</p>
+<ul>
+<li>štandardné príkazy „default controllera“ (napr. <code># SendSignal sig1</code>, <code># WaitTime 2</code>, <code># Blank PaintFanEntity</code>, …),</li>
+<li>natívnu syntax radiča podporovanú jeho simuláciou (napr. <code>IF var1 = 3 THEN</code>, volanie makier, volanie procedúry robotického modulu, …).</li>
+</ul>
+<p>Zoznam syntaxe podporovanej simuláciou konkrétneho radiča nájdete v (skrátenej) používateľskej príručke daného radiča. V simulačnej vrstve je úplne prípustné miešať príkazy „default controllera“ s príkazmi v natívnej syntaxi radiča.</p>
+<p><strong>Príklad:</strong> OLP príkaz, ktorý otvára alebo zatvára striekaciu pištoľ. Berie tieto parametre:</p>
+<ul>
+<li>číslo pištole (<code>&lt;GunNum&gt;</code>, celé číslo),</li>
+<li>požadovaný stav (<code>&lt;Status&gt;</code>, logická hodnota: „true“ = zapnuté, „false“ = vypnuté).</li>
+</ul>
+<p>V štúdii dodržte tieto pravidlá pomenovania komponentov vejára pištole: názov robota, potom „gun“, potom číslo. Napríklad pre robota „r1“: <code>r1_gun1</code>, <code>r1_gun2</code>.</p>
+<p>UI/Download syntax príkazu môže byť: <code>MyPaintGunCommand &lt;GunNum&gt;, &lt;Status&gt;;</code></p>
+<p>V simulačnej vrstve sa zobrazí alebo skryje správny komponent vejára pištole:</p>
+<pre><code>IF &lt;Status&gt; THEN              &lt;-- natívna syntax radiča
+  # Display &lt;Robot&gt;gun&lt;GunNum&gt; &lt;-- príkaz default controllera
+ELSE                          &lt;-- natívna syntax radiča
+  # Blank &lt;Robot&gt;gun&lt;GunNum&gt;   &lt;-- príkaz default controllera
+ENDIF                         &lt;-- natívna syntax radiča</code></pre>
+<p>To isté v XML:</p>
+<pre><code>&lt;SimulationLayer&gt;
+  &lt;Line&gt;
+    &lt;Item Type="const"&gt;IF&lt;/Item&gt;
+    &lt;Item Type="parameter"&gt;Status&lt;/Item&gt;
+    &lt;Item Type="const"&gt;THEN&lt;/Item&gt;
+  &lt;/Line&gt;
+  &lt;Line&gt;
+    &lt;Item Type="const"&gt;# Display ${Robot}gun&lt;/Item&gt;
+    &lt;Item Type="parameter"&gt;GunNum&lt;/Item&gt;
+  &lt;/Line&gt;
+  &lt;Line&gt;
+    &lt;Item Type="const"&gt;ELSE&lt;/Item&gt;
+  &lt;/Line&gt;
+  &lt;Line&gt;
+    &lt;Item Type="const"&gt;# Blank ${Robot}gun&lt;/Item&gt;
+    &lt;Item Type="parameter"&gt;GunNum&lt;/Item&gt;
+  &lt;/Line&gt;
+  &lt;Line&gt;
+    &lt;Item Type="const"&gt;ENDIF&lt;/Item&gt;
+  &lt;/Line&gt;
+&lt;/SimulationLayer&gt;</code></pre>
+
+<h3>3.35 Download Layer</h3>
+<p>Rovnaké možnosti ako <code>UILayer</code> – podporuje viacero riadkov.</p>
+
+<h3>3.36 AdditionalDownloadLayer</h3>
+<p>Táto voliteľná sekcia slúži na popis alternatívnych download vrstiev pre prípad, keď sa OLP príkaz musí stiahnuť do viac ako jedného miesta programového súboru. Podporuje rovnakú syntax ako bežná sekcia <code>DownloadLayer</code>.</p>
+<p>Táto možnosť je momentálne podporovaná iba pre Kuka-Vkrc s týmito typmi:</p>
+<ul>
+<li><code>&lt;AdditionalDownloadLayer Type="Adv"&gt;</code> – KRL syntax pred pohybom</li>
+<li><code>&lt;AdditionalDownloadLayer Type="Main"&gt;</code> – KRL syntax po pohybe</li>
+<li><code>&lt;AdditionalDownloadLayer Type="Trig"&gt;</code> – KRL syntax v sekcii SPS_TRIG</li>
+</ul>
+<div class="note"><strong>Poznámka:</strong> pri Kuka-Vkrc sa bežná sekcia <code>DownloadLayer</code> používa na popis syntaxe OLP príkazu v pozícii hlavičky foldu.</div>
+
+<h3>3.37 OlpDialogs</h3>
+<p>Obsahuje zoznam dialógov; každý z nich umožňuje vytvoriť jeden alebo viac OLP príkazov.</p>
+
+<h3>3.38 Dialog</h3>
+<pre><code>&lt;OlpDialogs&gt;
+  &lt;Dialog Title="MyTest|Customized|ChooseLocation"
+          Description="Please select a location" Icon="gripperOp.ico"&gt;
+    &lt;OlpCommandRef&gt;
+      &lt;OlpCommand&gt;ChooseLocation&lt;/OlpCommand&gt;
+    &lt;/OlpCommandRef&gt;
+  &lt;/Dialog&gt;
+&lt;/OlpDialogs&gt;</code></pre>
+<p><strong>[@, 1] Title</strong> – názov dialógu v Teach Pendante. Každý znak <code>|</code> znamená nový podadresár (podmenu).</p>
+<figure><img src="obrazky/str041_1.png" alt="Menu Teach Pendantu s podmenu"><figcaption>Znaky | v atribúte Title vytvárajú vnorené podmenu v ponuke Teach Pendantu.</figcaption></figure>
+<p><strong>[@, 0-1] Description</strong> – krátky popis pre používateľa vnútri dialógu.</p>
+<figure><img src="obrazky/str041_2.png" alt="Dialóg s popisom"><figcaption>Text z atribútu Description sa zobrazí v hornej časti dialógu.</figcaption></figure>
+<p><strong>[@, 0-1] Icon</strong> – ikona dialógu.</p>
+<figure><img src="obrazky/str042_1.png" alt="Dialóg s vlastnou ikonou"><figcaption>Vlastná ikona dialógu nastavená atribútom Icon.</figcaption></figure>
+<p>Používateľ môže vytvoriť priečinok <code>CustomizedIcons</code> pod <code>\Robotics\Olp\</code> a uložiť tam svoje ikony. Tento priečinok slúži všetkým radičom pre OLP aj pohybové vlastné dialógy. <code>Icon</code> je voliteľný atribút a jeho hodnotou je relatívna cesta od priečinka <code>CustomizedIcons</code> (aby sa nemusela písať celá cesta).</p>
+<p>V príklade sa <code>gripperOp.ico</code> nachádza v priečinku <code>CustomizedIcons</code>. Vnútri tohto priečinka si môžete ikony ľubovoľne organizovať do vnorených podpriečinkov, napríklad:<br>
+<code>\Robotics\Olp\CustomizedIcons\weld\myIcon.ico</code> → <code>&lt;Icon="weld\myIcon.ico"&gt;</code></p>
+<p>Jedným dialógom je možné vytvoriť aj viac OLP príkazov, pokiaľ sa žiadny parameter neopakuje viac ako raz. Keď potom používateľ v Teach Pendante klikne na jeden z týchto OLP príkazov, otvorí sa spoločný dialóg a umožní upraviť oba.</p>
+<div class="note"><strong>Dôležité:</strong> po vytvorení príkazov pomocou dialógu už nemeňte názvy dialógu (ani názvy príkazov) v XML. Zmena názvu dialógu by odstránila väzbu medzi ním a príkazmi, ktoré boli cez neho prispôsobené – existujúce príkazy by sa už nedali ďalej upravovať. Zmena názvov príkazov by navyše spôsobila, že download a simulačné vrstvy prestanú byť dohľadateľné.</div>
+
+<h3>3.39 Representation – určenie explicitnej vrstvy</h3>
+<p>Používateľ môže definovať explicitnú vrstvu, ktorá reprezentuje hodnotu dynamického parametra. Hodnota atribútu <code>Representation</code> môže byť <code>UI</code>, <code>simulation</code> alebo <code>download</code>.</p>
+<ol>
+<li>V sekcii <code>Item</code>:
+<pre><code>&lt;Item Type="dynamicParameter" Representation="UI"&gt;Tool Nr&lt;/Item&gt;</code></pre></li>
+<li>V sekcii <code>If</code>:
+<pre><code>&lt;If Representation="download"&gt;
+  &lt;![CDATA[(('Ipo Fr' == #BASE) &amp;&amp; ('Tool Nr' != 90))]]&gt;
+  &lt;Item Type="const"&gt;G80&lt;/Item&gt;
+&lt;/If&gt;</code></pre></li>
+<li>V sekcii <code>Switch</code>:
+<pre><code>&lt;Switch ParamName="Tool Nr" DynamicParameter="true" Representation="download"&gt;
+  &lt;Case Value="90"&gt;&lt;Item Type="const"&gt;G90&lt;/Item&gt;&lt;/Case&gt;
+  &lt;Case Value="80"&gt;&lt;Item Type="const"&gt;G80&lt;/Item&gt;&lt;/Case&gt;
+&lt;/Switch&gt;</code></pre></li>
+</ol>
+
+<h3>3.40 Štandardné XML kľúčové slová (entity)</h3>
+<table>
+<tr><th>Entita</th><th>Význam</th></tr>
+<tr><td><code>&amp;lt;</code></td><td>Znak menšie (&lt;) – začína značku elementu (prvý znak počiatočnej alebo koncovej značky).</td></tr>
+<tr><td><code>&amp;amp;</code></td><td>Znak ampersand (&amp;) – začína zápis entity.</td></tr>
+<tr><td><code>&amp;gt;</code></td><td>Znak väčšie (&gt;) – ukončuje počiatočnú alebo koncovú značku.</td></tr>
+<tr><td><code>&amp;quot;</code></td><td>Dvojitá úvodzovka (") – keď ju treba vložiť do reťazca, ktorý je už v dvojitých úvodzovkách.</td></tr>
+<tr><td><code>&amp;apos;</code></td><td>Apostrof (') – keď ho treba vložiť do reťazca, ktorý je už v jednoduchých úvodzovkách.</td></tr>
+</table>
+<div class="note"><strong>Poznámka:</strong> znaky (") a (') podporuje viacero editorov, preto pred použitím <code>&amp;quot;</code> a <code>&amp;apos;</code> skúste najprv jednoduchý zápis.</div>
+<p>Použitie v <code>&lt;Item&gt;</code>:</p>
+<pre><code>&lt;Item Type="const"&gt;5&amp;lt;=5 &amp;amp; 6=&amp;gt;6 &amp;apos;CAR&amp;apos; &amp;quot;ROBOT&amp;quot;&lt;/Item&gt;</code></pre>
+<figure><img src="obrazky/str044_1.png" alt="Výsledok zápisu entít v OLP príkaze"><figcaption>Výsledný text príkazu po vyhodnotení entít.</figcaption></figure>
+<p>A v <code>&lt;ElmDef&gt;</code>:</p>
+<pre><code>&lt;ComboDef&gt;
+  &lt;ElmDef&gt;0&amp;lt;=10&lt;/ElmDef&gt;
+  &lt;ElmDef&gt;10&amp;lt;=20&lt;/ElmDef&gt;
+  &lt;ElmDef&gt;30&amp;lt;=40&lt;/ElmDef&gt;
+  &lt;ElmDef&gt;40&amp;lt;50&lt;/ElmDef&gt;
+&lt;/ComboDef&gt;</code></pre>
+<figure><img src="obrazky/str044_2.png" alt="Combo box s porovnávacími znakmi"><figcaption>Rozbaľovací zoznam s hodnotami obsahujúcimi znak &lt;.</figcaption></figure>
+
+<h3>3.41 Atribút UploadLocationType</h3>
+<pre><code>&lt;Command Name="Anfrage" UploadLocationType="Seam Start"&gt;</code></pre>
+<p>Tento atribút slúži na vytváranie operácií zvarových húseníc (seam) pri uploade na základe OLP príkazov (namiesto na základe vlastných lokácií). Systém vytvorí húsenicu od lokácie za OLP príkazom „Seam Start“ až po lokáciu za OLP príkazom „Seam End“.</p>
+<p><strong>Podrobnejšie:</strong></p>
+<ul>
+<li><strong>UploadLocationType = Seam Start</strong> – systém chápe, že nasledujúca lokácia v programe definuje začiatok húsenice. Ak žiadna nasledujúca lokácia neexistuje (OLP príkaz po poslednom pohybe), upload predchádzajúci vlastný OLP príkaz ignoruje. Rovnako ako pri vlastných pohybových príkazoch typu Seam Start, lokácia chápaná ako Seam Start v prípade potreby uzatvára aj predchádzajúcu húsenicu (napríklad keď chýba značka Seam End).</li>
+<li><strong>UploadLocationType = Seam End</strong> – systém chápe, že nasledujúca načítaná lokácia definuje koniec húsenice. Ak nasledujúca lokácia neexistuje, predchádzajúci vlastný OLP príkaz sa ignoruje. Lokácia chápaná ako Seam End vytvorí aj jednolokačnú húsenicu, ak predchádzajúce lokácie neboli definované ako vnútro húsenice (napríklad keď chýba značka Seam Start).</li>
+<li><strong>UploadLocationType = Seam Middle</strong> – systém chápe, že nasledujúca načítaná lokácia je stredná lokácia húsenice. Ak nasledujúca lokácia neexistuje, predchádzajúci vlastný OLP príkaz sa ignoruje. Lokácia chápaná ako Seam Middle v prípade potreby húsenicu aj začne (napríklad keď chýba značka Seam Start).</li>
+</ul>
+<p><strong>Príklad.</strong> Keď program obsahuje:</p>
+<pre><code>LIN P1
+LIN P2
+OLP_COMMAND_DEFINED_AS_SEAM_START
+LIN P3
+LIN P4
+OLP_COMMAND_DEFINED_AS_SEAM_END
+LIN P5
+LIN P6</code></pre>
+<p>Upload vytvorí nasledujúcu štruktúru:</p>
+<pre><code>CONTINUOUS OP
+ - P1 (via)
+ - P2 (via)
+   • OLP_COMMAND_DEFINED_AS_SEAM_START
+   • Seam 1
+       • P3 (seam)
+       • P4 (seam)
+           ■ OLP_COMMAND_DEFINED_AS_SEAM_END
+       • P5 (seam)
+ - P6 (via)</code></pre>
+
+<h3>3.42 Atribút MfgType</h3>
+<pre><code>&lt;Command Name="Anfrage" UploadLocationType="Seam Start" MfgType="ArcContinuousMfg"&gt;</code></pre>
+<p>Atribút <code>MfgType</code> slúži na vytváranie špecializovaných podtried výrobných prvkov <code>WeldPoint</code> a <code>ContinuousMfg</code>. Možné hodnoty:</p>
+<p><strong>Pre prispôsobenie WELD lokácie</strong> – Process Simulate on eMServer (PS eMS):</p>
+<ul><li><code>NutWeldPoint</code></li><li><code>StudWeldPoint</code></li><li>alebo ľubovoľná používateľom definovaná Planner podtrieda <code>WeldPoint</code></li></ul>
+<p><strong>Pre prispôsobenie SEAM lokácie (Start/Middle/End)</strong> – Process Simulate on eMServer (PS eMS):</p>
+<ul><li><code>ArcContinuousMfg</code>, <code>GlueContinuousMfg</code>, <code>PaintContinuousMfg</code>, <code>SealContinuousMfg</code>, <code>LaserWeldContinuousMfg</code>, <code>LaserBrazeContinuousMfg</code>, <code>LaserCutContinuousMfg</code>, <code>WaterJetContinuousMfg</code>, <code>RollerHemmingContinuousMfg</code>, <code>MachiningContinuousMfg</code>, <code>CoatingContinuousMfg</code>, <code>PlyLayupContinuousMfg</code></li><li>alebo ľubovoľná používateľom definovaná Planner podtrieda <code>ContinuousMfg</code></li></ul>
+<p><strong>Process Simulate on Teamcenter (PS TC):</strong></p>
+<ul><li><code>ArcWeld</code>, <code>Glue</code>, <code>Paint</code>, <code>Seal</code>, <code>LaserWeld</code>, <code>LaserBraze</code>, <code>LaserCut</code>, <code>WaterJetCut</code>, <code>RollerHemming</code>, <code>Machining</code>, <code>Coating</code>, <code>PlyLayup</code></li><li>alebo ľubovoľný používateľom definovaný typ procesu seam mfg v Teamcentri</li></ul>
+
+<h3>3.43 CDATA – štandardné XML kľúčové slová</h3>
+<p>Keď chcete stiahnuť tento riadok:</p>
+<pre><code>&lt;Item Type="const"&gt;('Speed' &gt;50) &amp;&amp; ('Acceleration' &lt;=30)&lt;/Item&gt;</code></pre>
+<p>museli by ste napísať:</p>
+<pre><code>&lt;Item Type="const"&gt;(&amp;apos;Speed&amp;apos; &amp;gt;50) &amp;amp;&amp;amp;
+( &amp;apos;Acceleration&amp;apos; &amp;lt;=30)&lt;/Item&gt;</code></pre>
+<p>Pomocou CDATA stačí napísať:</p>
+<pre><code>&lt;Item Type="const"&gt;&lt;![CDATA[('Speed' &gt;50) &amp;&amp; ('Acceleration' &lt;=30)]]&gt;&lt;/Item&gt;</code></pre>
+
+<h3>3.44 Template Command – odovzdávanie argumentov z dialógu do OLP príkazu</h3>
+<p>Ak potrebujete viacero podobných OLP príkazov, môžete zmenšiť veľkosť XML definovaním šablónového OLP príkazu s argumentmi. Sekcia dialógu sa potom na tieto šablónové príkazy odvolá a argumentom dá konkrétnu hodnotu.</p>
+<p>V nasledujúcom príklade šablónový príkaz <code>SET_SEGMENT</code> používa argument <code>SegmentNumber</code>; v sekcii dialógov sa ten istý šablónový príkaz použije s rôznymi hodnotami argumentu:</p>
+<pre><code>&lt;RobotController Name="Kuka-Krc"&gt;
+&lt;RoboticParams&gt;
+  &lt;Param Name="ProgNr1" ValueType="int" MaxVal="16" MinVal="1"/&gt;
+&lt;/RoboticParams&gt;
+
+&lt;TemplateOlpCommands&gt;
+  &lt;TemplateCommand Name="SET_SEGMENT"&gt;
+    &lt;RoboticParamRef&gt;
+      &lt;Param&gt;ProgNr1&lt;/Param&gt;
+    &lt;/RoboticParamRef&gt;
+    &lt;CommandName&gt;
+      &lt;Item Type="const"&gt;SET_SEGMENT_&lt;/Item&gt;
+      &lt;Item Type="const" Arg="SegmentNumber"/&gt;
+    &lt;/CommandName&gt;
+    &lt;Layers&gt;
+      &lt;UILayer&gt;
+        &lt;Line&gt;
+          &lt;Item Type="const"&gt;SET SEGMENT(&lt;/Item&gt;
+          &lt;Item Type="const" Arg="SegmentNumber"&gt;&lt;/Item&gt;
+          &lt;Item Type="const"&gt;);&lt;/Item&gt;
+        &lt;/Line&gt;
+      &lt;/UILayer&gt;
+      &lt;SimulationLayer&gt;&lt;/SimulationLayer&gt;
+      &lt;DownloadLayer&gt;
+        &lt;Line&gt;
+          &lt;Item Type="const"&gt;SET SEGMENT(&lt;/Item&gt;
+          &lt;Item Type="const" Arg="SegmentNumber"&gt;&lt;/Item&gt;
+          &lt;Item Type="const"&gt;(&lt;/Item&gt;
+          &lt;Item Type="parameter"&gt;ProgNr1&lt;/Item&gt;
+          &lt;Item Type="const"&gt;);&lt;/Item&gt;
+        &lt;/Line&gt;
+      &lt;/DownloadLayer&gt;
+    &lt;/Layers&gt;
+  &lt;/TemplateCommand&gt;
+&lt;/TemplateOlpCommands&gt;
+
+&lt;OlpDialogs&gt;
+  &lt;Dialog Title="SET_SEGMENT|SET_SEGMENT1"&gt;
+    &lt;OlpCommandRef&gt;&lt;OlpCommand SegmentNumber="1"&gt;SET_SEGMENT&lt;/OlpCommand&gt;&lt;/OlpCommandRef&gt;
+  &lt;/Dialog&gt;
+  &lt;Dialog Title="SET_SEGMENT|SET_SEGMENT2"&gt;
+    &lt;OlpCommandRef&gt;&lt;OlpCommand SegmentNumber="2"&gt;SET_SEGMENT&lt;/OlpCommand&gt;&lt;/OlpCommandRef&gt;
+  &lt;/Dialog&gt;
+  &lt;Dialog Title="SET_SEGMENT|SET_SEGMENT3"&gt;
+    &lt;OlpCommandRef&gt;&lt;OlpCommand SegmentNumber="3"&gt;SET_SEGMENT&lt;/OlpCommand&gt;&lt;/OlpCommandRef&gt;
+  &lt;/Dialog&gt;
+&lt;/OlpDialogs&gt;
+&lt;/RobotController&gt;</code></pre>
+
+<h3>3.45 Aliases (aliasy)</h3>
+<p>Pomocou <code>Aliases</code> môžete definovať opakovane použiteľné bloky XML inštrukcií, na ktoré sa dá odkazovať v príslušných vrstvách príkazov.</p>
+<p>Dramaticky to zmenšuje veľkosť XML odstránením opakujúcej sa syntaxe. Aliasy zároveň uľahčujú údržbu XML, pretože každá oprava sa robí na jednom mieste.</p>
+<pre><code>&lt;RoboticParams&gt;
+  ...
+&lt;/RoboticParams&gt;
+
+&lt;Aliases&gt;
+  &lt;Alias Name="BitOrder"&gt;
+    &lt;Switch ParamName="ordre1"&gt;
+      &lt;Case Value="0"&gt;&lt;/Case&gt;
+      &lt;Case Value="1"&gt;&lt;Item Type="const"&gt;\O1&lt;/Item&gt;&lt;/Case&gt;
+    &lt;/Switch&gt;
+    &lt;Switch ParamName="ordre2"&gt;
+      &lt;Case Value="0"&gt;&lt;/Case&gt;
+      &lt;Case Value="1"&gt;&lt;Item Type="const"&gt;\O2&lt;/Item&gt;&lt;/Case&gt;
+    &lt;/Switch&gt;
+    &lt;!-- ... ordre3 až ordre6 rovnako ... --&gt;
+  &lt;/Alias&gt;
+&lt;/Aliases&gt;
+
+&lt;OlpCommands&gt;
+  &lt;Command Name="PLC_Release"&gt;
+    &lt;RoboticParamRef&gt;...&lt;/RoboticParamRef&gt;
+    &lt;Layers&gt;
+      &lt;UILayer&gt;
+        &lt;Line&gt;&lt;Alias&gt;BitOrder&lt;/Alias&gt;&lt;/Line&gt;
+      &lt;/UILayer&gt;
+      &lt;DownloadLayer&gt;
+        &lt;Line&gt;
+          &lt;Item Type="const"&gt;ORDER&lt;/Item&gt;
+          &lt;Alias&gt;BitOrder&lt;/Alias&gt;
+          &lt;Item Type="const"&gt;;&lt;/Item&gt;
+        &lt;/Line&gt;
+      &lt;/DownloadLayer&gt;
+    &lt;/Layers&gt;
+  &lt;/Command&gt;
+&lt;/OlpCommands&gt;</code></pre>
+
+<h3>3.46 Atribút Picture</h3>
+<pre><code>&lt;Param Name="OperationTask" ValueType="string" Default="Weld 10Am"&gt;
+  &lt;ComboDef&gt;
+    &lt;ElmDef Picture="guns_tools\.appzc5299229.jpg"&gt;Weld 10Am&lt;/ElmDef&gt;
+    &lt;ElmDef Picture="guns_tools\.appzc5299231.jpg"&gt;Weld 20Am&lt;/ElmDef&gt;
+    &lt;ElmDef Picture="Laser\.appguna.jpg"&gt;Laser high temp&lt;/ElmDef&gt;
+    &lt;ElmDef Picture="Laser\appgr_5276159_030430.jpg"&gt;Laser middle temp&lt;/ElmDef&gt;
+    &lt;ElmDef Picture="Laser\appzc5299228.jpg"&gt;Laser low temp&lt;/ElmDef&gt;
+    &lt;ElmDef Picture="fixtures\.appvr5299295.jpg"&gt;Fixtures - 295&lt;/ElmDef&gt;
+    &lt;ElmDef Picture="fixtures\.appbg5266425_a.jpg"&gt;Fixtures - 425&lt;/ElmDef&gt;
+    &lt;ElmDef Picture="grippers\.appgr5236767.jpg"&gt;Gripper X&lt;/ElmDef&gt;
+    &lt;ElmDef Picture="grippers\.appgr5299315_a.jpg"&gt;Gripper XX&lt;/ElmDef&gt;
+  &lt;/ComboDef&gt;
+&lt;/Param&gt;</code></pre>
+<figure><img src="obrazky/str055_1.png" alt="Dialóg s obrázkom pre Weld 10Am"><figcaption>Obrázok v dialógu sa dynamicky mení podľa výberu v rozbaľovacom zozname – tu Weld 10Am.</figcaption></figure>
+<figure><img src="obrazky/str055_2.png" alt="Dialóg s obrázkom pre Weld 20Am"><figcaption>Po zmene výberu na Weld 20Am sa zobrazí iný nástroj.</figcaption></figure>
+<figure><img src="obrazky/str055_3.png" alt="Dialóg s obrázkom prípravku"><figcaption>Voľba Fixtures – 295 zobrazí príslušný prípravok. Pomáha to vybrať správne kliešte.</figcaption></figure>
+<p>Cesta k obrázku je relatívna k <code>..\Robotics\Olp\CustomizedPictures</code>. <code>Picture</code> je voliteľný atribút. Vnútri tohto priečinka si môžete obrázky organizovať do vnorených podpriečinkov, napríklad:<br>
+<code>\Robotics\Olp\CustomizedPictures\Laser\appzc5299228.jpg</code> → <code>&lt;ElmDef Picture="Laser\appzc5299228.jpg"&gt;Weld 10Am&lt;/ElmDef&gt;</code></p>
+
+<h3>3.47 Mechanizmus online pomocníka pre vlastné dialógy</h3>
+<p><strong>Motivácia:</strong></p>
+<ul>
+<li>Vlastné dialógy pre OLP a pohyb pre daný radič (a verziu) píše len pár ľudí, ktorí potom musia všetkým ostatným vysvetliť význam dialógov vrátane každej hodnoty v zozname, významu každého parametra atď.</li>
+<li>Príde nový zamestnanec.</li>
+<li>Zamestnanci môžu niečo zabudnúť alebo si chcú len overiť, či to pochopili správne.</li>
+</ul>
+<p><strong>Jednoduché riešenie:</strong> služba automaticky vygeneruje tlačidlo <strong>Help</strong> v ľavom dolnom rohu dialógu. Keď sa chce používateľ o danej funkcii dozvedieť viac, jednoducho klikne na toto tlačidlo a súbor sa otvorí online. Mechanizmus podporuje všetky existujúce technológie vrátane dokumentov, zvuku, videa a ďalších médií.</p>
+<p><strong>Syntax:</strong></p>
+<pre><code>&lt;Dialog Title="MyTest" Help="MyTest.html"&gt;</code></pre>
+<p>Cesta k pomocníkovi je relatívna k <code>..\Robotics\Olp\CustomizedHelp</code>. Ak chcete spustiť URL, pridajte do priečinka zástupcu (shortcut), do XML zadajte jeho názov + <code>.url</code>.</p>
+<ul>
+<li>Požadovanú položku môžete spustiť cez sieť (internet, intranet).</li>
+<li>Všetky položky môžete uložiť na jeden server a pristupovať k nim cez zástupcov.</li>
+</ul>
+
+<h3>3.48 Centralizácia XML súborov do jedného zdieľaného priečinka</h3>
+<p>Predvolene sa XML súbory čítajú z inštalačného priečinka: <code>\Robotics\Olp\&lt;controller name&gt;\OlpConfiguration\*.xml</code>, <code>\Robotics\Olp\&lt;controller name&gt;\MotionConfiguration\*.xml</code> atď.</p>
+<p><strong>Syntax:</strong> atribút <code>CustomizedPath</code> v súbore <code>rrs.xml</code>:</p>
+<pre><code>&lt;Controller Name="Kuka-Krc"&gt;
+  &lt;InstalledVersions&gt;
+    &lt;Version Name="krc5.3_r01" CustomizedPath="\\jlhzsomebody\Kuka-Krc\Supplier_1"&gt;
+      &lt;ModuleName&gt;C:\rrs_bin\rcs_krc1\krc5.3_r01\bin\rcskrc1_tune.exe&lt;/ModuleName&gt;
+    &lt;/Version&gt;
+  &lt;/InstalledVersions&gt;
+&lt;/Controller&gt;</code></pre>
+<p>V tomto príklade robot s radičom Kuka-Krc a verziou krc5.3_r01 číta svoje XML súbory odtiaľto:</p>
+<figure><img src="obrazky/str057_1.png" alt="Zdieľaný sieťový priečinok s konfiguráciami"><figcaption>Zdieľaný priečinok obsahuje podpriečinky CustomizedHelp, CustomizedIcons, CustomizedPictures, DataConfiguration, MotionConfiguration, OlpConfiguration a PathTemplateConfiguration.</figcaption></figure>
+
+<h3>3.49 Nástroje na ladenie (Debugging Tools)</h3>
+<p>Ak chcete zobraziť všetky vrstvy jedného alebo viacerých vlastných OLP príkazov, otvorte Teach Pendant, kliknite pravým tlačidlom na príslušné OLP príkazy a vyberte <strong>Show Layers</strong>.</p>
+<figure><img src="obrazky/str057_2.png" alt="Kontextové menu s nástrojmi ladenia"><figcaption>Kontextové menu s položkami Show Layers, Customized Upload Parameter Checker a Customized Upload Debugger.</figcaption></figure>
+<p><strong>Show Layers:</strong> otvorí sa nový dialóg so simulačnou a download vrstvou každého vybraného vlastného OLP príkazu.</p>
+<figure><img src="obrazky/str057_3.png" alt="Dialóg Show Layers"><figcaption>Dialóg Show Layers zobrazuje UI, simulačnú a download reprezentáciu príkazu.</figcaption></figure>
+<p><strong>Upload Checker:</strong> otvorí sa dialóg s aktuálnymi a načítanými (uploadovanými) hodnotami každého robotického a dynamického parametra vybraného vlastného OLP príkazu.</p>
+<figure><img src="obrazky/str058_1.png" alt="Customized Upload Parameter Checker"><figcaption>Porovnanie aktuálnych hodnôt (Current Value) a načítaných hodnôt (Upload Value) pre každý parameter.</figcaption></figure>
+<p><strong>Upload Debugger:</strong> keď sa vlastný OLP príkaz pri uploade nepodarí rozpoznať, dá sa príčina zlyhania odladiť. Postup:</p>
+<ul>
+<li>Použite existujúcu lokáciu (alebo vytvorte fiktívnu) v štúdii.</li>
+<li>Presuňte problematický vlastný OLP príkaz na túto lokáciu s príslušnými vlastnými parametrami.</li>
+<li>Zobrazí sa dialóg Debugger s prípadnými internými problémami download/upload (vo väčšine prípadov k nim nedochádza).</li>
+<li>Vložte problematický riadok (riadky) z pôvodného robotického programu do dialógu a kliknite na <strong>Re-Upload</strong>.</li>
+<li>Dialóg červenou zobrazí riadky, ktoré spôsobili zlyhanie XML uploadu, a oznámi dôvod zlyhania.</li>
+</ul>
+<p>Obsah dialógu Upload Debugger možno upraviť a znova spustiť tlačidlom <strong>Re-Upload</strong>.</p>
+<figure><img src="obrazky/str059_1.png" alt="Upload Debugger"><figcaption>Upload Debugger s vloženým programovým riadkom, chybným riadkom zvýrazneným červenou a vysvetlením chyby.</figcaption></figure>
+<p><strong>Tlačidlo Upload and Download:</strong> ladiaci nástroj, ktorý obsah v Upload Debuggeri načíta a znova stiahne a potom porovná pôvodný obsah s výsledkom uploadu a downloadu (zobrazeným v spodnej časti dialógu). Každý nesúlad sa zvýrazní červenou.</p>
+<p>Príklad – používateľ definuje takýto vlastný OLP príkaz:</p>
+<pre><code>&lt;Param Name="GlueTechVersion" ValueType="string"&gt;
+  &lt;ComboDef&gt;
+    &lt;ElmDef&gt;1.2.1&lt;/ElmDef&gt;
+    &lt;ElmDef&gt;2.3.2&lt;/ElmDef&gt;
+  &lt;/ComboDef&gt;
+&lt;/Param&gt;
+...
+&lt;DownloadLayer&gt;
+  &lt;Line&gt;
+    &lt;Item Type="const"&gt;;FOLD&lt;/Item&gt;
+    &lt;Item Type="parameter"&gt;GlueTechVersion&lt;/Item&gt;
+    &lt;Item Type="const"&gt;Check PrePressure =&lt;/Item&gt;
+    &lt;If&gt;
+      &lt;![CDATA['GlueTechVersion'==1.2.1]]&gt;
+      &lt;Item Type="const"&gt;Yes&lt;/Item&gt;
+    &lt;/If&gt;
+    &lt;Else&gt;
+      &lt;Item Type="const"&gt;No&lt;/Item&gt;
+    &lt;/Else&gt;
+  &lt;/Line&gt;
+  &lt;Line&gt;
+    &lt;Item Type="const"&gt;;ENDFOLD&lt;/Item&gt;
+  &lt;/Line&gt;
+&lt;/DownloadLayer&gt;</code></pre>
+<p>Download potom dá buď <code>;FOLD 1.2.1 Check PrePressure = Yes</code> + <code>;ENDFOLD</code>, alebo <code>;FOLD 2.3.2 Check PrePressure = No</code> + <code>;ENDFOLD</code>.</p>
+<p>Ak program používateľa chybne obsahuje riadok, ktorý nezodpovedá ani jednej z týchto možností, upload prebehne úspešne, ale obsah OLP bude odlišný od obsahu programu. Otestovať sa to dá práve tlačidlom <strong>Upload and Download</strong>: po vložení chybného riadka a kliknutí na tlačidlo uvidíte, že výsledok uploadu a downloadu sa líši od pôvodného riadka programu (2.3.2 sa zmení na 1.2.1).</p>
+<figure><img src="obrazky/str061_1.png" alt="Porovnanie výsledku upload a download"><figcaption>Nesúlad medzi pôvodným obsahom a výsledkom upload + download je zvýraznený červenou.</figcaption></figure>
+
+<h3>3.50 Zmena názvu OLP dialógu</h3>
+<p><strong>Syntax:</strong> atribút <code>Id</code>.</p>
+<p><strong>Účel:</strong></p>
+<ul>
+<li>premenovať dialóg vlastného OLP príkazu, alebo</li>
+<li>preusporiadať ponuky a podponuky vlastných OLP príkazov, ktoré sa zobrazia po kliknutí na tlačidlo <strong>Add</strong> v editore OLP príkazov,</li>
+</ul>
+<p>bez straty väzby medzi existujúcimi vlastnými príkazmi v databáze a ich editačným dialógom.</p>
+<p>Ak boli príkazy vytvorené týmto XML kódom:</p>
+<pre><code>&lt;Dialog Title="Customized|Supplier1|Robot Job1"&gt;
+  &lt;OlpCommandRef&gt;&lt;OlpCommand&gt;XXX&lt;/OlpCommand&gt;&lt;/OlpCommandRef&gt;
+&lt;/Dialog&gt;</code></pre>
+<p>a teraz chcete zmeniť názov dialógu, pridajte atribút <code>Id</code> so starým názvom a potom zmeňte <code>Title</code> na nový:</p>
+<pre><code>&lt;Dialog Id="Customized|Supplier1|Robot Job1"
+        Title="Customized|Supplier1|Robot|Job1"&gt;
+  &lt;OlpCommandRef&gt;&lt;OlpCommand&gt;XXX&lt;/OlpCommand&gt;&lt;/OlpCommandRef&gt;
+&lt;/Dialog&gt;</code></pre>
+<p>Ak už atribút <code>Id</code> existuje a chcete názov dialógu zmeniť znova, meňte iba atribút <code>Title</code>:</p>
+<pre><code>&lt;Dialog Id="Customized|Supplier1|Robot|Job1"
+        Title="Customized|Supplier1|Robot|Job2"&gt;
+  &lt;OlpCommandRef&gt;&lt;OlpCommand&gt;XXX&lt;/OlpCommand&gt;&lt;/OlpCommandRef&gt;
+&lt;/Dialog&gt;</code></pre>
+<p><code>Id</code> je údaj uložený v databáze, ktorý spája OLP príkazy s dialógom používaným na ich úpravu. Ak <code>Id</code> nie je definované, ako predvolené <code>Id</code> sa použije <code>Title</code>.</p>
+
+<h3>3.51 Viac OLP príkazov v jednom dialógu</h3>
+<p><strong>a. Použitie viacerých OLP príkazov s rovnakými názvami v zdieľanom dialógu:</strong></p>
+<pre><code>&lt;Dialog Title="Glue"&gt;
+  &lt;OlpCommandRef&gt;
+    &lt;OlpCommand&gt;OLP_1&lt;/OlpCommand&gt;
+    &lt;OlpCommand&gt;OLP_2&lt;/OlpCommand&gt;
+    &lt;OlpCommand&gt;OLP_3&lt;/OlpCommand&gt;
+    &lt;OlpCommand&gt;OLP_1&lt;/OlpCommand&gt;
+  &lt;/OlpCommandRef&gt;
+&lt;/Dialog&gt;</code></pre>
+<figure><img src="obrazky/str063_1.png" alt="XML definícia dvoch OLP príkazov"><figcaption>XML definícia parametrov a dvoch OLP príkazov zdieľajúcich jeden dialóg.</figcaption></figure>
+<figure><img src="obrazky/str063_2.png" alt="XML definícia dialógu"><figcaption>Sekcia OlpDialogs, ktorá oba príkazy spája do jedného dialógu.</figcaption></figure>
+<p><strong>b. Oddelenie príkazov (Ungroup) v Teach Pendante:</strong></p>
+<figure><img src="obrazky/str064_1.png" alt="Výber dialógu v Teach Pendante"><figcaption>V Teach Pendante vyberte názov dialógu.</figcaption></figure>
+<figure><img src="obrazky/str064_2.png" alt="Spoločný dialóg pre dva príkazy"><figcaption>Otvorí sa jediný dialóg pre oba OLP príkazy (Param_A, Param_B, Param_C).</figcaption></figure>
+<figure><img src="obrazky/str064_3.png" alt="Dva zoskupené OLP príkazy"><figcaption>Kliknutím na OK vzniknú dva zoskupené OLP príkazy.</figcaption></figure>
+<figure><img src="obrazky/str064_4.png" alt="Príkaz Ungroup v kontextovom menu"><figcaption>Na rozdelenie príkazov použite z kontextového menu položku Ungroup.</figcaption></figure>
+<figure><img src="obrazky/str065_1.png" alt="Samostatný príkaz OLP_1"><figcaption>Výsledok – prvý OLP príkaz je samostatný.</figcaption></figure>
+<figure><img src="obrazky/str065_2.png" alt="Samostatný príkaz OLP_2"><figcaption>Aj druhý OLP príkaz je teraz samostatný.</figcaption></figure>
+
+<h3>3.52 Oddeľovač ponuky (Menu Separator)</h3>
+<p>Ak chcete do Teach Pendantu pridať oddeľovače, použite znak <code>-</code> na konci názvu fiktívneho dialógu:</p>
+<pre><code>&lt;Dialog Title="PL2Glue|-"&gt;
+  &lt;OlpCommandRef/&gt;
+&lt;/Dialog&gt;</code></pre>
+<figure><img src="obrazky/str065_3.png" alt="Ponuka s oddeľovačom"><figcaption>Oddeľovač rozdeľuje položky v ponuke Teach Pendantu.</figcaption></figure>
+<div class="note"><strong>Poznámka:</strong> ten istý názov oddeľovača môžete použiť aj viackrát.</div>
+
+<h3>3.53 Inteligentný dialóg – závislosti aktivácie medzi ovládacími prvkami</h3>
+<p>Sú prípady, keď sa niektoré voliteľné vlastné parametre majú deaktivovať v závislosti od hodnôt vybraných v iných vlastných parametroch. Na to slúži voliteľná sekcia <code>Disabled</code> pri parametri. V nej definujete podmienky (na základe vybraných hodnôt iných parametrov), za ktorých sa parameter v dialógu deaktivuje. Deaktivované parametre sa pri kliknutí na OK neberú do úvahy.</p>
+<pre><code>&lt;Command Name="PLC_Release"&gt;
+&lt;RoboticParamRef&gt;
+  &lt;Param Optional="true" Name="order1"&gt;
+    &lt;Disabled&gt;
+      &lt;!--Deaktivuj order1 v prípade, že order3 je deaktivovaný--&gt;
+      &lt;![CDATA[('order3' == NULL)]]&gt;
+    &lt;/Disabled&gt;
+  &lt;/Param&gt;
+  &lt;Param&gt;SDelay | Sync&lt;/Param&gt;
+  &lt;Param&gt;order2&lt;/Param&gt;
+  &lt;Param Optional="true" Name="order3"&gt;
+    &lt;Disabled&gt;
+      &lt;!--Deaktivuj order3, ak 'SDelay | Sync' má hodnotu SDelay
+          a 'order4' je väčší ako 5--&gt;
+      &lt;![CDATA[('SDelay | Sync'==SDelay) &amp;&amp; ('order4' &gt;5)]]&gt;
+    &lt;/Disabled&gt;
+  &lt;/Param&gt;
+  &lt;Param&gt;order4&lt;/Param&gt;
+  &lt;Param&gt;order5&lt;/Param&gt;
+  &lt;Param&gt;order6&lt;/Param&gt;
+&lt;/RoboticParamRef&gt;</code></pre>
+<figure><img src="obrazky/str070_1.png" alt="Dialóg s deaktivovanými prvkami"><figcaption>Dialóg PLC_Release – niektoré ovládacie prvky sú podľa podmienok deaktivované.</figcaption></figure>
+
+<h3>3.54 Inteligentný dialóg – prvky s dynamickými hodnotami a viditeľnosťou</h3>
+<p>Pomocou atribútov <code>Hide</code> a <code>DynamicValue</code> sa dialóg dynamicky prispôsobí vašej logike:</p>
+<figure><img src="obrazky/str067_1.png" alt="Dynamický dialóg – krok 1"><figcaption>Pri ActSpeed = 0 je zobrazený iba jeden ovládací prvok.</figcaption></figure>
+<figure><img src="obrazky/str067_2.png" alt="Dynamický dialóg – krok 2"><figcaption>Po zmene ActSpeed na 1 sa objaví pole Angle s hodnotami 30 a -30.</figcaption></figure>
+<figure><img src="obrazky/str067_3.png" alt="Dynamický dialóg – krok 3"><figcaption>Po zadaní kladného uhla sa zobrazí FeedNo s rozsahom [20, 200].</figcaption></figure>
+<figure><img src="obrazky/str067_4.png" alt="Dynamický dialóg – krok 4"><figcaption>Pri zápornom uhle sa rozsahy obrátia a zobrazia sa ďalšie parametre (Part, EqualPr, Advance_Gun_Time).</figcaption></figure>
+<p>Kód v XML:</p>
+<pre><code>&lt;RobotController Name="Kuka-Krc-Volvo"&gt;
+&lt;RoboticParams&gt;
+  &lt;Param Name="ActSpeed" ValueType="string" Default="0"&gt;
+    &lt;ComboDef&gt;
+      &lt;ElmDef&gt;0&lt;/ElmDef&gt;
+      &lt;ElmDef&gt;1&lt;/ElmDef&gt;
+      &lt;ElmDef&gt;2&lt;/ElmDef&gt;
+    &lt;/ComboDef&gt;
+  &lt;/Param&gt;
+
+  &lt;Param Name="Angle" ValueType="string"&gt;
+    &lt;Hide&gt;&lt;![CDATA[('ActSpeed' == 0)]]&gt;&lt;/Hide&gt;
+    &lt;ComboDef&gt;
+      &lt;DynamicValue Value="30"&gt;&lt;![CDATA[('ActSpeed' == 1)]]&gt;&lt;/DynamicValue&gt;
+      &lt;DynamicValue Value="-30"&gt;&lt;![CDATA[('ActSpeed' == 1)]]&gt;&lt;/DynamicValue&gt;
+      &lt;DynamicValue Value="60"&gt;&lt;![CDATA[('ActSpeed' == 2)]]&gt;&lt;/DynamicValue&gt;
+      &lt;DynamicValue Value="-60"&gt;&lt;![CDATA[('ActSpeed' == 2)]]&gt;&lt;/DynamicValue&gt;
+    &lt;/ComboDef&gt;
+  &lt;/Param&gt;
+
+  &lt;Param Name="FeedNo" ValueType="int" MaxVal="4" MinVal="0"&gt;
+    &lt;Hide&gt;&lt;![CDATA[('Angle' == "")]]&gt;&lt;/Hide&gt;
+    &lt;DynamicValue MaxVal="200" MinVal="20" Default="100"&gt;
+      &lt;![CDATA[('Angle'&gt; 0)]]&gt;
+    &lt;/DynamicValue&gt;
+    &lt;DynamicValue MaxVal="-20" MinVal="-200" Default="-100"&gt;
+      &lt;![CDATA[('Angle' &lt;0)]]&gt;
+    &lt;/DynamicValue&gt;
+  &lt;/Param&gt;
+
+  &lt;Param Name="Part" ValueType="double" MaxVal="100.00" MinVal="0.00"&gt;
+    &lt;Hide&gt;&lt;![CDATA[(('FeedNo'=="))||('Angle'&gt; 0)]]&gt;&lt;/Hide&gt;
+  &lt;/Param&gt;
+  &lt;Param Name="EqualPr" ValueType="double" MaxVal="9.75" MinVal="-9.75"&gt;
+    &lt;Hide&gt;&lt;![CDATA[(('FeedNo'=="))||('Angle'&gt; 0)]]&gt;&lt;/Hide&gt;
+  &lt;/Param&gt;
+  &lt;Param Name="Advance_Gun_Time" ValueType="int" MaxVal="0" MinVal="-300"&gt;
+    &lt;Hide&gt;&lt;![CDATA[(('FeedNo'=="))||('Angle'&gt; 0)]]&gt;&lt;/Hide&gt;
+  &lt;/Param&gt;
+&lt;/RoboticParams&gt;
+
+&lt;Command Name="Dynamic"&gt;
+  &lt;RoboticParamRef&gt;
+    &lt;Param&gt;ActSpeed&lt;/Param&gt;
+    &lt;Param&gt;Angle&lt;/Param&gt;
+    &lt;Param&gt;FeedNo&lt;/Param&gt;
+    &lt;Param&gt;Part&lt;/Param&gt;
+    &lt;Param&gt;EqualPr&lt;/Param&gt;
+    &lt;Param&gt;Advance_Gun_Time&lt;/Param&gt;
+  &lt;/RoboticParamRef&gt;
+&lt;/Command&gt;</code></pre>
+<p><strong>Obmedzenia:</strong></p>
+<ol>
+<li>Celý zoznam názvov parametrov, ktoré sa vyskytujú v sekcii <code>Disabled</code>, musí byť prítomný v dialógu.</li>
+<li>Nepoužívajte v zdieľanom dialógu viacero OLP príkazov s rovnakým názvom parametra. Príkaz Checker toto obmedzenie nedokáže overiť.</li>
+</ol>
+
+<h2 id="k4">4. MotionConfiguration – vlastné pohybové príkazy</h2>
+
+<h3>4.1 Východisko</h3>
+<p>Vlastné pohybové príkazy sú kombinácie bežných pohybových príkazov s procesnými príkazmi.</p>
+
+<h3>4.2 Popis</h3>
+<p>Pre každú kombináciu typu lokácie a typu procesu (stĺpec pod sekciou názvu radiča) sa dá použiť iný dialóg na úpravu príslušného robotického parametra.</p>
+<figure><img src="obrazky/str071_1.png" alt="Process Type pre Weld lokáciu"><figcaption>Pre lokáciu typu Weld sú dostupné procesy Spot a Glue on.</figcaption></figure>
+<figure><img src="obrazky/str071_2.png" alt="Process Type pre Via lokáciu"><figcaption>Pre lokáciu typu Via sú dostupné procesy Glue on a Glue off.</figcaption></figure>
+<p>Výberom hodnoty používateľ prispôsobí lokáciu.</p>
+<p>Do Path Editora (pod sekciu názvu radiča) sa dá pridať nový stĺpec <strong>Customized Motion</strong>, ktorý umožňuje pohybový príkaz prispôsobiť, upraviť a zobraziť v odporúčanom formáte. Pre lokácie, ktoré prispôsobené neboli, zostanú bunky v tomto stĺpci prázdne.</p>
+<p>Keď používateľ klikne na bunku v tomto stĺpci, Path Editor zavolá službu, ktorá nájde konfiguračný súbor správneho radiča a otvorí dialóg (podľa <code>locationType</code> + <code>processType</code>), aby sa nastavili robotické parametre deklarované v konfiguračnom súbore. Dialóg sa otvorí s aktuálnymi hodnotami parametrov.</p>
+<figure><img src="obrazky/str072_1.png" alt="Dialóg vlastného pohybového príkazu"><figcaption>Dialóg Weld Glue On – Customized Motion s parametrami Backup, Gun#, Schedule.</figcaption></figure>
+<p>Po nastavení hodnôt a kliknutí na OK služba aktualizuje všetky robotické parametre na lokácii novými hodnotami a vráti do Path Editora správny formát tohto prispôsobenia (podľa UI vrstvy v XML), ktorý sa zobrazí v príslušnej bunke.</p>
+<p>Ak robotické parametre na lokácii neexistujú, služba ich vytvorí so správnym typom a nastaví im novú hodnotu.</p>
+<p>Služba sa dokáže za behu pripojiť k radiču, aby načítala zoznam objektov – výhradne pre rozbaľovacie zoznamy (napríklad signály alebo nástroje).</p>
+<p>Každá kombinácia typu lokácie, procesu a pohybu môže vytvoriť inú download vrstvu.</p>
+
+<h3>4.3 Kostra súboru</h3>
+<p>XML súbory sa majú ukladať do: <code>&lt;PS installation&gt;\eMPower\Robotics\Olp\&lt;controller name&gt;\MotionConfiguration\*.xml</code></p>
+<pre><code>&lt;RobotController Name="Kuka-Krc"&gt;
+&lt;RoboticParams&gt;
+&lt;/RoboticParams&gt;
+
+&lt;Location Type="VIA"&gt;
+  &lt;Process Type="Spot Off"&gt;
+    &lt;!--Vynúť nasledujúcim robotickým parametrom novú hodnotu--&gt;
+    &lt;Force&gt;
+    &lt;/Force&gt;
+    &lt;Dialog Title="moshe|Kuka-Vkrc - VIA Spot Customization"
+            Description="Please customize the location"&gt;
+      &lt;RoboticParamRef&gt;
+      &lt;/RoboticParamRef&gt;
+    &lt;/Dialog&gt;
+    &lt;UILayer&gt;
+    &lt;/UILayer&gt;
+    &lt;SimulationLayer&gt;
+    &lt;/SimulationLayer&gt;
+    &lt;Motion Type="1"&gt;
+      &lt;DownloadLayer&gt;
+      &lt;/DownloadLayer&gt;
+    &lt;/Motion&gt;
+  &lt;/Process&gt;
+&lt;/Location&gt;
+&lt;/RobotController&gt;</code></pre>
+
+<h3>4.4 Location</h3>
+<p><strong>[@, 1] Type</strong> – typ lokácie: <code>VIA</code>, <code>WELD</code>, <code>Single Seam</code>, <code>Seam Start</code>, <code>Seam End</code>, <code>Seam Middle</code>.</p>
+
+<h3>4.5 Location pre Pick &amp; Place</h3>
+<p><strong>[@, 1] Type</strong> – typ lokácie: <code>Pick</code>, <code>Place</code>.</p>
+
+<h3>4.6 Process</h3>
+<p><strong>[@, 1] Type</strong> – typ procesu.</p>
+
+<h3>4.7 Force</h3>
+<p>Keď používateľ vyberie pre lokáciu typ procesu, aplikácia vynúti nové hodnoty konkrétnych robotických parametrov.</p>
+<p><strong>[#, 0-*] Param</strong></p>
+<ul>
+<li><strong>[@, 1] Name</strong> – názov robotického parametra.</li>
+<li><strong>[@, 1] Type</strong> – typ robotického parametra: <code>int</code>, <code>double</code>, <code>string</code>, <code>TxObject</code>.</li>
+<li><strong>[@, 1] NewValue</strong> – nová hodnota robotického parametra.</li>
+</ul>
+<pre><code>&lt;Param Name="RRS_ZONE_NAME" Type="string" NewValue="Zfine"/&gt;</code></pre>
+
+<h3>4.8 Dialog</h3>
+<ul>
+<li><strong>[@, 1] Title</strong> – názov dialógu v Teach Pendante.</li>
+<li><strong>[@, 0-1] Description</strong> – krátky popis pre používateľa vnútri dialógu.</li>
+</ul>
+
+<h3>4.9 RoboticParamRef</h3>
+<p>Syntax je rovnaká ako pri OLP príkazoch. Ide o parametre, ktoré sa zobrazia v dialógu po kliknutí na stĺpec <strong>Customized Motion</strong> v Path Editore.</p>
+
+<h3>4.10 UILayer</h3>
+<div class="note"><strong>Poznámka:</strong> ako UILayer sa má vypísať iba jediný riadok.</div>
+<p>Tento element reprezentuje jeden vlastný pohybový príkaz v Path Editore:</p>
+<figure><img src="obrazky/str074_1.png" alt="Vlastný pohybový príkaz v Path Editore"><figcaption>Stĺpec Customized Motion zobrazuje reprezentáciu prispôsobeného pohybu (RRS_MODE, RRS_SPEED atď.).</figcaption></figure>
+
+<h3>4.11 Simulation Layer</h3>
+<p>V simulačnej vrstve vlastného pohybového príkazu definujete, ako sa bude príkaz simulovať. Podobne ako pri vlastných OLP príkazoch môžete do simulačnej vrstvy napísať akýkoľvek elementárny príkaz (jeden na sekciu <code>&lt;Line&gt;...&lt;/Line&gt;</code>), ktorému radič rozumie, a miešať príkazy „default controllera“ s natívnou syntaxou radiča.</p>
+<p><strong>Hlavný rozdiel:</strong> treba definovať, kedy sa má každý príkaz interpretovať vzhľadom na pohyb do lokácie – pred pohybom, súbežne s ním, alebo po jeho dokončení. Aby sa príkazy vykonali skutočne v lokácii a nie počas predvýpočtu pohybu (niekoľko lokácií vopred), môžete si vynútiť úplný príchod do lokácie (zóna fine).</p>
+<p>Na tieto účely boli zavedené ďalšie príkazy „default controllera“. Rozumejú im simulácie všetkých radičov, hoci nie sú dostupné z Teach Pendantu ani editora príkazov:</p>
+<ul>
+<li><strong># StartMove</strong> – spustí pohyb do lokácie a okamžite interpretuje nasledujúci príkaz simulačnej vrstvy (súbežne s pohybom robota).</li>
+<li><strong># WaitReached</strong> – čaká na dokončenie pohybu, kým sa interpretuje nasledujúci príkaz. Pozor: nejde o indikáciu, že lokácia bola dosiahnutá. Znamená to, že modul RCS vrátil stav 2 (posledný krok, rýchlosť 0) alebo stav 1 (potrebné ďalšie dáta). Pri pohybe s flyby teda robot môže byť ešte v určitej vzdialenosti od lokácie (podľa správania RCS a bufferovania). Pri MOP simulácii to zvyčajne znamená, že robot dosiahol zónu lokácie.</li>
+<li><strong># Move</strong> – kombinuje <code># StartMove</code> a <code># WaitReached</code>: spustí pohyb a počká na jeho dokončenie, až potom interpretuje ďalší príkaz.</li>
+<li><strong># ForceFullArrival</strong> – vynúti zónu fine a úplný príchod do aktuálneho cieľa pred interpretáciou ďalšieho príkazu. Používa sa, aby sa ďalšie príkazy simulovali priamo v lokácii. Má to vplyv na trajektóriu aj na celkový čas cyklu.</li>
+</ul>
+<p>Ak sa <code># StartMove</code> ani <code># Move</code> v simulačnej vrstve výslovne neuvedie, všetky simulácie radičov predpokladajú, že príkazy simulačnej vrstvy sa interpretujú po pohybe do lokácie. Inými slovami, neuvedenie týchto príkazov je totožné s uvedením <code># Move</code> ako prvého príkazu.</p>
+<p>Pri simulácii štandardnej zvarovej lokácie, ktorá neobsahuje explicitné OLP príkazy <code># Weld</code> a <code># GunToState</code>, ich simulácia počas behu implicitne doplní (hneď po pohybe a pred akýmkoľvek OLP príkazom nastaveným na lokácii), takže sa vždy odsimuluje zatvorenie a opätovné otvorenie klieští. Naopak pri <strong>vlastnej</strong> zvarovej lokácii sa pohyb zvarovacích klieští implicitne nesimuluje – niektorí používatelia totiž chcú zváranie simulovať posielaním signálov inteligentným zariadeniam, nie pohybom klieští. Ak teda chcete pri vlastnej zvarovej lokácii simulovať pohyb klieští, musíte do simulačnej vrstvy vložiť príkaz <code># Weld</code>.</p>
+<p><strong>Príklad.</strong> Vlastná zvarová lokácia, kde pohyb klieští simuluje inteligentné zariadenie. Kliešte sú pneumaticko-servo kliešte, ktoré – ako každé pneumatické kliešte – nie sú definované ako externá os robota. Na rozdiel od pneumatických klieští s tromi stavmi (CLOSE, SEMIOPEN, OPEN) však majú veľa stavov, každý určený hodnotou otvorenia (1 mm, 2 mm, … 100 mm, …).</p>
+<p>Najprv namodelujte inteligentné zariadenie klieští tak, aby prijímalo od robota cez PLC tento signál:</p>
+<ul>
+<li><code>[Device] TargetPose</code> (celočíselný signál v mm) ← PLC ← <code>TargetPoseGun&lt;GunNum&gt;</code> [Robot]: cieľová hodnota otvorenia klieští</li>
+</ul>
+<p>a aby robotu cez PLC posielalo tento signál:</p>
+<ul>
+<li><code>[Device] ActualPose</code> (celočíselný signál v mm) → PLC → <code>ActualPoseGun&lt;GunNum&gt;</code> [Robot]: skutočná hodnota otvorenia klieští</li>
+</ul>
+<p>Vlastný zvarový pohyb obsahuje dva ďalšie parametre: <code>GunNumber</code> a <code>GunPose</code> (v mm) – hodnota opätovného otvorenia klieští.</p>
+<p>V simulačnej vrstve sa vykonajú tieto kroky:</p>
+<ul>
+<li>Pohyb do lokácie s úplným príchodom</li>
+<li>Zatvorenie klieští – odoslanie signálu <code>TargetPoseGun&lt;GunNum&gt;</code> s hodnotou nula</li>
+<li>Čakanie, kým kliešte dosiahnu zatvorenú polohu – čaká sa, kým <code>ActualPoseGun</code> bude nula</li>
+<li>Uplynutie zváracieho času (pomocou štandardného parametra)</li>
+<li>Opätovné otvorenie klieští na <code>GunPose</code> – odoslanie signálu <code>TargetPoseGun&lt;GunNum&gt;</code> s hodnotou <code>&lt;GunPose&gt;</code></li>
+<li>Čakanie, kým kliešte dosiahnu cieľovú polohu</li>
+</ul>
+<pre><code>&lt;SimulationLayer&gt;
+  &lt;Line&gt;&lt;Item Type="const"&gt;# Move&lt;/Item&gt;&lt;/Line&gt;
+  &lt;Line&gt;&lt;Item Type="const"&gt;# ForceFullArrival&lt;/Item&gt;&lt;/Line&gt;
+  &lt;Line&gt;
+    &lt;Item Type="const"&gt;# SendSignal TargetPoseGun&lt;/Item&gt;
+    &lt;Item Type="parameter"&gt;GunNum&lt;/Item&gt;
+    &lt;Item Type="const"&gt;0&lt;/Item&gt;
+  &lt;/Line&gt;
+  &lt;Line&gt;
+    &lt;Item Type="const"&gt;# Wait Signal ActualPoseGun&lt;/Item&gt;
+    &lt;Item Type="parameter"&gt;GunNum&lt;/Item&gt;
+    &lt;Item Type="const"&gt;0&lt;/Item&gt;
+  &lt;/Line&gt;
+  &lt;Line&gt;
+    &lt;Item Type="const"&gt;# WaitTime&lt;/Item&gt;
+    &lt;Item Type="dynamicParameter"&gt;Weld Time&lt;/Item&gt;
+  &lt;/Line&gt;
+  &lt;Line&gt;
+    &lt;Item Type="const"&gt;# SendSignal TargetPoseGun&lt;/Item&gt;
+    &lt;Item Type="parameter"&gt;GunNum&lt;/Item&gt;
+    &lt;Item Type="const"&gt; &lt;/Item&gt;
+    &lt;Item Type="parameter"&gt;GunPose&lt;/Item&gt;
+  &lt;/Line&gt;
+  &lt;Line&gt;
+    &lt;Item Type="const"&gt;# WaitSignal TargetPoseGun&lt;/Item&gt;
+    &lt;Item Type="parameter"&gt;GunNum&lt;/Item&gt;
+    &lt;Item Type="const"&gt; &lt;/Item&gt;
+    &lt;Item Type="parameter"&gt;GunPose&lt;/Item&gt;
+  &lt;/Line&gt;
+&lt;/SimulationLayer&gt;</code></pre>
+
+<h3>4.12 Motion</h3>
+<p><strong>[@, 1] Type</strong> – typ pohybu.</p>
+
+<h3>4.13 Download Layer</h3>
+<p>Download vrstva každého pohybového príkazu musí obsahovať odkaz na jeden z dynamických parametrov <code>LocName</code> alebo <code>XDatName</code> (a pri kruhovom pohybe aj na <code>ViaLoc Name</code> alebo <code>Via XDatName</code>).</p>
+
+<h3>4.14 Nastavenie ďalších dynamických parametrov jediným výberom v rozhraní</h3>
+<pre><code>&lt;Dialog Title="Move_JobReq"&gt;
+  &lt;RoboticParamRef&gt;
+    &lt;Param&gt;Job&lt;/Param&gt;
+    &lt;Param Dynamic="true"&gt;Gun Position&lt;/Param&gt;
+  &lt;/RoboticParamRef&gt;
+  &lt;UiAdditionalDynamicParameters&gt;
+    &lt;AdditionalDynamicParam Name="Tool Data"&gt;
+      &lt;Item Type="const"&gt;t&lt;/Item&gt;
+      &lt;Item Type="dynamicParameter" FormatNumber="3"&gt;Gun Position&lt;/Item&gt;
+      &lt;Item Type="const"&gt;_onsert&lt;/Item&gt;
+    &lt;/AdditionalDynamicParam&gt;
+  &lt;/UiAdditionalDynamicParameters&gt;
+&lt;/Dialog&gt;</code></pre>
+<figure><img src="obrazky/str079_1.png" alt="Dialóg Move_JobReq a stav pred"><figcaption>Pred: dialóg Move_JobReq s parametrami Job a Gun Position; v Path Editore je Gun Position = 0 a Tool Data prázdne.</figcaption></figure>
+<figure><img src="obrazky/str079_2.png" alt="Stav po nastavení"><figcaption>Po: po zadaní Gun Position = 130 sa automaticky dopočíta Tool Data = t130_onsert.</figcaption></figure>
+
+<h3>4.15 Typ položky „expression“ vnútri AdditionalDynamicParam</h3>
+<p>Ak chcete nastaviť ďalší dynamický parameter výrazom z iných parametrov, použite typ položky <code>expression</code>:</p>
+<pre><code>&lt;Dialog Title="A15_Speed" Description="Please define relevant parameters:"&gt;
+  &lt;RoboticParamRef&gt;
+    &lt;Param&gt;A15_Speed m/min&lt;/Param&gt;
+  &lt;/RoboticParamRef&gt;
+  &lt;UiAdditionalDynamicParameters&gt;
+    &lt;AdditionalDynamicParam Name="Speed"&gt;
+      &lt;Item Type="expression"&gt;&lt;![CDATA[('A15_Speed m/min'/60)]]&gt;&lt;/Item&gt;
+    &lt;/AdditionalDynamicParam&gt;
+  &lt;/UiAdditionalDynamicParameters&gt;
+&lt;/Dialog&gt;</code></pre>
+<p>V uvedenom príklade po otvorení dialógu, nastavení „A15_Speed m/min“ a kliknutí na OK sa dynamický parameter <code>Speed</code> nastaví na hodnotu „A15_Speed m/min“ delenú 60.</p>
+
+<h3>4.16 Vlastný pohyb – atribút Level</h3>
+<p>Ak chcete použiť hodnotu parametra z úrovne operácie, pridajte atribút <code>Level</code>:</p>
+<pre><code>&lt;Item Type="parameter" Level="operation"&gt;RRS_ZONE_NAME&lt;/Item&gt;
+
+&lt;Switch ParamName="RRS_ZONE_NAME" Level="operation"&gt;</code></pre>
+<p>Parameter na úrovni operácie nie je možné nastaviť z používateľského rozhrania.</p>
+
+<h3>4.17 Hromadná úprava vlastného pohybu</h3>
+<p>Ak chcete nastaviť hodnoty vlastného pohybu naraz pre viacero lokácií, použite príkaz <strong>Set Locations Properties</strong>. Nastavte typ procesu pre všetky lokácie, potom vyberte riadok Customized motion a kliknutím otvorte dialóg.</p>
+<figure><img src="obrazky/str080_1.png" alt="Set Locations Properties"><figcaption>Dialóg Set Locations Properties – hromadné nastavenie vlastnosti Customized Motion pre viac lokácií naraz.</figcaption></figure>
+
+<h3>4.18 Použitie dynamických parametrov v sekcii &lt;Force&gt;</h3>
+<p>Ak chcete automaticky vynútiť hodnotu dynamického parametra po zmene typu procesu, použite <strong>syntax <code>Dynamic="true"</code></strong>:</p>
+<pre><code>&lt;Force&gt;
+  &lt;!--Vynútenie bežných parametrov--&gt;
+  &lt;Param Name="TypID" Type="int" NewValue="11"/&gt;
+  &lt;Param Name="Part" Type="double" NewValue="0.0"/&gt;
+  &lt;Param Name="Leave" Type="string" NewValue="CTRL"/&gt;
+  &lt;!--Vynútenie dynamických parametrov--&gt;
+  &lt;Param Name="Position Number" Dynamic="true" NewValue="3"/&gt;
+  &lt;Param Name="Gun State" Dynamic="true" NewValue="Open"/&gt;
+  &lt;Param Name="Weld Time" Dynamic="true" NewValue="5.5"/&gt;
+&lt;/Force&gt;</code></pre>
+
+<h3>4.19 Force podľa typu pohybu</h3>
+<p>Parametre možno vynútiť nielen podľa typu procesu, ale aj podľa typu pohybu:</p>
+<figure><img src="obrazky/str081_1.png" alt="XML s Force podľa typu pohybu"><figcaption>Sekcia &lt;Force&gt; použitá na úrovni Process (podľa typu procesu) aj na úrovni Motion (podľa typu pohybu).</figcaption></figure>
+
+<h3>4.20 Upload ďalších dynamických parametrov</h3>
+<p>Na vytvorenie nových hodnôt dynamických parametrov počas uploadu:</p>
+<pre><code>&lt;UploadAdditionalDynamicParameters&gt;
+  &lt;AdditionalDynamicParam Name="Loc Name"&gt;
+    &lt;Item Type="const"&gt;Reload&lt;/Item&gt;
+    &lt;Item Type="parameter"&gt;A21_StudNo&lt;/Item&gt;
+    &lt;Item Type="const"&gt;_&lt;/Item&gt;
+    &lt;Item Type="parameter"&gt;A21_ReloadPos&lt;/Item&gt;
+  &lt;/AdditionalDynamicParam&gt;
+&lt;/UploadAdditionalDynamicParameters&gt;</code></pre>
+<ol>
+<li>Môže byť definované podľa typu procesu a/alebo podľa typu pohybu.</li>
+<li>Po dokončení uploadu vlastného pohybového príkazu služba zostaví hodnotu pre každý názov <code>AdditionalDynamicParam</code>.</li>
+<li>Podporované sú: <code>const</code>, <code>parameter</code>, <code>dynamicParameter</code>.</li>
+<li>Prepínače (switch) podporované nie sú.</li>
+</ol>
+<figure><img src="obrazky/str082_1.png" alt="XML s UploadAdditionalDynamicParameters"><figcaption>Umiestnenie sekcie UploadAdditionalDynamicParameters na úrovni procesu aj pohybu.</figcaption></figure>
+
+<h3>4.21 UploadAdditionalParameters</h3>
+<p>Na vytvorenie nových <em>robotických</em> parametrov s hodnotami počas uploadu. Funguje rovnako ako <code>UploadAdditionalDynamicParameters</code>, ale pre bežné (nie dynamické) parametre. Názvy a typy parametrov (<code>int</code>, <code>double</code>, <code>string</code>) musia byť ako obvykle definované v sekcii <code>RoboticParams</code>.</p>
+<pre><code>&lt;UploadAdditionalParameters&gt;
+  &lt;AdditionalParam Name="Type Number"&gt;
+    &lt;Item Type="const"&gt;5&lt;/Item&gt;
+  &lt;/AdditionalParam&gt;
+  &lt;AdditionalParam Name="Type"&gt;
+    &lt;Item Type="const"&gt;A&lt;/Item&gt;
+  &lt;/AdditionalParam&gt;
+&lt;/UploadAdditionalParameters&gt;</code></pre>
+
+<h3>4.22 Atribút MfgType</h3>
+<pre><code>&lt;Location Type="Seam Start"/&gt;
+&lt;Process Type="A20_Stud_Reload" MfgType="ArcContinuousMfg"/&gt;</code></pre>
+<p>Atribút <code>MfgType</code> slúži na vytváranie špecializovaných podtried výrobných prvkov <code>WeldPoint</code> a <code>ContinuousMfg</code> (hodnoty pozri v kapitole 3.42).</p>
+
+<h3>4.23 Nástroje na ladenie</h3>
+<p>Ak chcete zobraziť všetky vrstvy jedného vlastného pohybového príkazu, pridajte do zobrazenia Path Editora stĺpec <strong>Customized Debug</strong> a kliknite na príslušnú bunku.</p>
+<figure><img src="obrazky/str083_1.png" alt="Stĺpec Customized Debug"><figcaption>Stĺpec Customized Debug ponúka Show Layers, Upload Checker a Upload Debugger.</figcaption></figure>
+<p><strong>Show Layers:</strong> otvorí dialóg so simulačnou a download vrstvou vybraného vlastného pohybového príkazu.</p>
+<figure><img src="obrazky/str083_2.png" alt="Show Layers pre pohybový príkaz"><figcaption>Simulačná a download vrstva vybraného vlastného pohybového príkazu.</figcaption></figure>
+<p><strong>Upload Checker:</strong> otvorí dialóg s aktuálnymi a načítanými hodnotami každého robotického a dynamického parametra vybraného príkazu.</p>
+<figure><img src="obrazky/str084_1.png" alt="Upload Parameter Checker pre pohyb"><figcaption>Porovnanie aktuálnych a načítaných hodnôt bežných aj dynamických parametrov.</figcaption></figure>
+<p><strong>Upload Debugger:</strong> ak sa vlastný pohybový príkaz pri uploade nepodarí rozpoznať, môžete proces odladiť:</p>
+<ul>
+<li>Použite existujúcu lokáciu (alebo vytvorte fiktívnu) v štúdii s rovnakým typom (weld, via, seam start, …) a rovnakým typom pohybu ako problémová lokácia.</li>
+<li>Nastavte na nej problémový vlastný typ procesu s príslušnými vlastnými parametrami.</li>
+<li>Zobrazí sa dialóg Debugger s prípadnými internými problémami download/upload.</li>
+<li>Vložte problematické riadky z pôvodného robotického programu a kliknite na <strong>Re-Upload</strong>.</li>
+<li>Dialóg zobrazí červenou riadky, ktoré spôsobili zlyhanie XML uploadu, spolu s vysvetlením príčiny.</li>
+</ul>
+<figure><img src="obrazky/str084_2.png" alt="Upload Debugger pre pohybový príkaz"><figcaption>Upload Debugger s chybovým hlásením o nenájdenej konštante.</figcaption></figure>
+<p><strong>Tlačidlo Upload and Download</strong> funguje rovnako ako pri OLP príkazoch (kapitola 3.49): načíta a znovu stiahne obsah a porovná ho s pôvodným; nesúlad zvýrazní červenou. Príklad s parametrom <code>GlueTechVersion</code>:</p>
+<pre><code>&lt;Param Name="GlueTechVersion" ValueType="string"&gt;
+  &lt;ComboDef&gt;
+    &lt;ElmDef&gt;1.2.1&lt;/ElmDef&gt;
+    &lt;ElmDef&gt;2.3.2&lt;/ElmDef&gt;
+  &lt;/ComboDef&gt;
+&lt;/Param&gt;
+
+&lt;DownloadLayer&gt;
+  &lt;Line&gt;
+    &lt;Item Type="const"&gt;;FOLD&lt;/Item&gt;
+    &lt;Item Type="parameter"&gt;GlueTechVersion&lt;/Item&gt;
+    &lt;Item Type="const"&gt;Check PrePressure =&lt;/Item&gt;
+    &lt;If&gt;&lt;![CDATA['GlueTechVersion'==1.2.1]]&gt;&lt;Item Type="const"&gt;Yes&lt;/Item&gt;&lt;/If&gt;
+    &lt;Else&gt;&lt;Item Type="const"&gt;No&lt;/Item&gt;&lt;/Else&gt;
+    &lt;Item Type="dynamicParameter"&gt;Loc Name&lt;/Item&gt;
+  &lt;/Line&gt;
+  &lt;Line&gt;&lt;Item Type="const"&gt;;ENDFOLD&lt;/Item&gt;&lt;/Line&gt;
+&lt;/DownloadLayer&gt;</code></pre>
+<figure><img src="obrazky/str086_1.png" alt="Výsledok upload and download pre pohyb"><figcaption>Rozdiel medzi pôvodným riadkom programu a výsledkom upload + download je zvýraznený červenou.</figcaption></figure>
+
+<h3>4.24 Úprava dynamických parametrov cez dialóg vlastného pohybu</h3>
+<p><strong>Syntax:</strong> použite <code>Dynamic="true"</code>.</p>
+<pre><code>&lt;Dialog&gt;
+  &lt;RoboticParamRef&gt;
+    &lt;Param Dynamic="true"&gt;Gun State&lt;/Param&gt;
+    &lt;Param Dynamic="true"&gt;Servo Value&lt;/Param&gt;
+    &lt;Param Optional="true" Dynamic="true"&gt;Speed&lt;/Param&gt;
+    &lt;Param Optional="true" Dynamic="true"&gt;Weld Time&lt;/Param&gt;
+    &lt;Param Optional="true" Dynamic="true"&gt;Gun CloseTime&lt;/Param&gt;
+  &lt;/RoboticParamRef&gt;
+&lt;/Dialog&gt;</code></pre>
+
+<h3>4.25 Parametre s predvolenými hodnotami</h3>
+<p>Ak majú všetky robotické parametre v <code>RoboticParamRef</code> konkrétneho dialógu predvolené hodnoty, po výbere hodnoty Process Type zobrazia <code>UILayer</code>, <code>SimulationLayer</code> aj <code>DownloadLayer</code> svoju reprezentáciu s použitím predvolených hodnôt. Po downloade a uploade bude mať nová lokácia na sebe skutočný parameter s predvolenými hodnotami.</p>
+
+<h2 id="k5">5. Upload vlastných príkazov (Upload RoboticsCustomizedUI)</h2>
+
+<h3>5.1 Upload – pravidlá</h3>
+<p>Aby sa vlastné príkazy dali načítať späť (upload), dodržte tieto pravidlá:</p>
+<ol>
+<li><p>Po každej z týchto premenných – <code>string</code>, <code>dynamic</code>, <code>object</code> – urobte buď A, alebo B:</p>
+<p><strong>A.</strong> Umiestnite za premennú konštantu (hodnota parametra siaha od aktuálnej pozície parsera po najbližšiu nájdenú konštantu).</p>
+<p>Nesprávne:</p>
+<pre><code>&lt;Item Type="parameter"&gt;Robot&lt;/Item&gt;
+&lt;Item Type="parameter"&gt;Gun&lt;/Item&gt;</code></pre>
+<p>Správne:</p>
+<pre><code>&lt;Item Type="parameter"&gt;Robot&lt;/Item&gt;
+&lt;Item Type="const"&gt;;&lt;/Item&gt;
+&lt;Item Type="parameter"&gt;Gun&lt;/Item&gt;</code></pre>
+<p><strong>B.</strong> Premenná musí byť poslednou položkou v riadku (hodnota parametra siaha od pozície parsera do konca riadka).</p>
+<p>Nesprávne:</p>
+<pre><code>&lt;Line&gt;
+  &lt;Item Type="const"&gt;The Robot is&lt;/Item&gt;
+  &lt;Item Type="parameter"&gt;Robot&lt;/Item&gt;
+  &lt;Item Type="parameter"&gt;RRS_Tool&lt;/Item&gt;
+&lt;/Line&gt;</code></pre>
+<p>Správne:</p>
+<pre><code>&lt;Line&gt;
+  &lt;Item Type="const"&gt;The Robot is&lt;/Item&gt;
+  &lt;Item Type="parameter"&gt;Robot&lt;/Item&gt;
+&lt;/Line&gt;</code></pre></li>
+
+<li>Ak je použitý zoznam (comboList), koncová konštanta nie je potrebná. Ak je to reťazec bez koncovej konštanty, na jeho rozdelenie sa použije najbližší nealfanumerický znak.</li>
+
+<li><p>Ak je typ <code>Int</code> a maximálna aj minimálna hranica majú rovnaký počet číslic (X číslic), parser prevezme nasledujúcich X číslic.</p>
+<pre><code>&lt;RoboticParams&gt;
+  &lt;Param Name="ordre1" ValueType="int" MaxVal="100" MinVal="999"/&gt;
+  &lt;Param Name="order2" ValueType="int" MaxVal="10"  MinVal="99"/&gt;
+  &lt;Param Name="order3" ValueType="int" MaxVal="0"   MinVal="9"/&gt;
+  ...
+&lt;DownloadLayer&gt;
+  &lt;Line&gt;
+    &lt;Item Type="parameter"&gt;order1&lt;/Item&gt;
+    &lt;Item Type="parameter"&gt;order2&lt;/Item&gt;
+    &lt;Item Type="parameter"&gt;order3&lt;/Item&gt;
+    ...</code></pre>
+<p>Download vrstva: <code>123456</code> → Upload: order1=123, order2=45, order3=6. V tomto prípade sa dajú celočíselné parametre použiť bez koncových konštánt.</p></li>
+
+<li><p>Po premenných typu <code>int</code> a <code>double</code> platí: ak sa za ich hodnotu pridajú ďalšie znaky, prvý z nich nesmie byť číselný (parser používa na rozpoznanie konca číselnej hodnoty regulárny výraz).</p>
+<pre><code>Int Speed = 88
+TxObject Robot (name) = 9robot</code></pre>
+<p>Nesprávne:</p>
+<pre><code>&lt;Item Type="parameter"&gt;Speed&lt;/Item&gt;
+&lt;Item Type="parameter"&gt;Robot&lt;/Item&gt;</code></pre>
+<p>Download: <code>889robot</code></p></li>
+
+<li><p>Vlastný pohybový alebo OLP príkaz môže mať voliteľné parametre. Predpokladá sa pritom, že v žiadnom robotickom jazyku neexistujú „voliteľné“ volané príkazy, napríklad <code>CALL XYZ (par1, par2, opt1, opt2)</code> nemožno nikdy reprezentovať ako <code>CALL XYZ (par1, par2, opt2)</code> – kompilátor robota by hlásil chýbajúci parameter. Rieši sa to buď ako <code>CALL XYZ (par1, par2, , opt2)</code>, alebo <code>CALL XYZ (par1, par2, EMPTY, opt2)</code>, kde EMPTY je kľúčové slovo. Aby systém takéto príkazy s chýbajúcimi parametrami rozpoznal, musíte ich rovnako oddeliť – konštantou alebo kľúčovým slovom.</p></li>
+
+<li>Jeden OLP príkaz ↔ jedna inštrukcia (jeden riadok, jeden fold pri Kuka, jeden blok <code>MOVE .. ENDMOVE</code> pri Comau).</li>
+
+<li>Na konci riadka nesmie byť medzera.</li>
+
+<li>Kuka Vkrc nie je podporovaná (OLP príkaz sa rozpadne do troch rôznych miest stiahnutého programu).</li>
+
+<li>Štýl radiča určuje, či sa názov objektu načíta s rovnakou, alebo odlišnou veľkosťou písmen.</li>
+</ol>
+
+<h3>5.2 Upload dynamického parametra pomocou regulárneho výrazu</h3>
+<p><strong>Syntax:</strong> atribút <code>UploadRegex</code>.</p>
+<p>Ak za dynamickým parametrom nenasleduje konštanta, pridajte atribút <code>UploadRegex</code>, ktorý sa definuje ako konkrétna hodnota dynamického parametra.</p>
+<pre><code>&lt;Item Type="dynamicParameter" UploadRegex="\w+"&gt;LPDatShortName&lt;/Item&gt;</code></pre>
+
+<h3>5.3 Upload Regex pre reťazcový parameter</h3>
+<p>Ak za reťazcovým parametrom nenasleduje konštanta, pridajte atribút <code>UploadRegex</code>:</p>
+<pre><code>&lt;Item Type="parameter" UploadRegex="\w+"&gt;ShortName&lt;/Item&gt;</code></pre>
+
+<h3>5.4 Hľadanie najbližšej logickej konštanty</h3>
+<p>Vo všeobecnosti by mal mať každý parameter, ktorý nie je <code>int</code> ani <code>double</code>, hneď za sebou v XML konštantu.</p>
+<p>Upload teraz podporuje reťazcové parametre na konci konštrukcie switch/case, ak za celým blokom switch nasleduje položka typu const. (Táto nasledujúca konštanta môže byť umiestnená aj v nasledujúcom bloku switch – pozri príklad.)</p>
+<pre><code>&lt;Switch ParamName="LPDatShortName" DynamicParameter="true"&gt;
+  &lt;Case Value=""&gt;
+    &lt;Item Type="const"&gt;no LPDatShortName[&lt;/Item&gt;
+  &lt;/Case&gt;
+  &lt;Case&gt;
+    &lt;Default&gt;
+      &lt;Item Type="const"&gt;LPDatShortName:&lt;/Item&gt;
+      &lt;Item Type="dynamicParameter"&gt;LPDatShortName&lt;/Item&gt;
+    &lt;/Default&gt;
+  &lt;/Case&gt;
+&lt;/Switch&gt;
+
+&lt;Switch ParamName="Base Name" DynamicParameter="true"&gt;
+  &lt;Case Value=""&gt;
+    &lt;Item Type="const"&gt;Base[&lt;/Item&gt;
+    &lt;Item Type="dynamicParameter"&gt;Base Nr&lt;/Item&gt;
+    &lt;Item Type="const"&gt;]&lt;/Item&gt;
+  &lt;/Case&gt;
+  &lt;Case&gt;
+    &lt;Default&gt;
+      &lt;Item Type="const"&gt;Base[&lt;/Item&gt;
+      &lt;Item Type="dynamicParameter"&gt;Base Nr&lt;/Item&gt;
+      &lt;Item Type="const"&gt;]:&lt;/Item&gt;
+      &lt;Item Type="dynamicParameter"&gt;Base Name&lt;/Item&gt;
+    &lt;/Default&gt;
+  &lt;/Case&gt;
+&lt;/Switch&gt;
+
+&lt;Item Type="const" Conditional="false" CondParam="WeldFi"&gt;No WeldFi&lt;/Item&gt;
+&lt;Item Type="const" Conditional="true" CondParam="WeldFi"&gt;There is WeldFi:&lt;/Item&gt;
+&lt;Item Type="parameter" Conditional="true" CondParam="WeldFi"&gt;WeldFi&lt;/Item&gt;</code></pre>
+
+<h3>5.5 Voliteľné medzery (Optional Spaces)</h3>
+<pre><code>&lt;Item Type="optionalSpaces" xml:space="preserve"&gt;   &lt;/Item&gt;</code></pre>
+<p>Pri výpise tejto položky sa vypíše presný počet medzier. Pri uploade sa však namiesto toho akceptuje 0 až N medzier. Dá sa to využiť obojsmerne:</p>
+<ul>
+<li><strong>Z medzier na žiadne medzery:</strong> syntax sa stiahne s medzerami, ak do XML pridáte <code>&lt;Item Type="optionalSpaces" xml:space="preserve"&gt;&lt;/Item&gt;</code>. Ak skutočný program medzery nemá, upload je aj tak možný.</li>
+<li><strong>Zo žiadnych medzier na medzery:</strong> syntax sa stiahne bez medzier; ak skutočný program medzery má, upload je aj tak možný.</li>
+</ul>
+
+<h3>5.6 Podpora viacerých riadkov v download vrstve</h3>
+<p>Všetky radiče podporujú upload vlastných OLP a pohybových príkazov s viacerými riadkami (viacerými foldmi v prípade Kuka-Krc) v download vrstve.</p>
+
+<h3>5.7 Vylepšená podpora voliteľných medzier pri uploade</h3>
+<ol>
+<li><p>Už nie je nutné zapisovať všetky <code>optionalSpaces</code> – služba im „rozumie“ a implementuje ich sama tak, že konštantu rozdelí podľa medzery ako predvoleného oddeľovača.</p>
+<p>Napíšete iba:</p>
+<pre><code>&lt;Item Type="const"&gt;; %{PE} %MKUKATPUSER&lt;/Item&gt;</code></pre>
+<p>Parser tomu rozumie ako:</p>
+<pre><code>&lt;Item Type="const"&gt;;&lt;/Item&gt;
+&lt;Item Type="optionalSpaces" xml:space="preserve"&gt; &lt;/Item&gt;
+&lt;Item Type="const"&gt;%{PE}&lt;/Item&gt;
+&lt;Item Type="optionalSpaces" xml:space="preserve"&gt; &lt;/Item&gt;
+&lt;Item Type="const"&gt;%MKUKATPUSER&lt;/Item&gt;
+&lt;Item Type="optionalSpaces" xml:space="preserve"&gt; &lt;/Item&gt;</code></pre></li>
+
+<li><p>Voliteľné medzery možno uviesť aj medzi dvoma zlepenými znakmi:</p>
+<pre><code>&lt;Item Type="const" Separator="."&gt;; %.{.PE.} %.MKUKATPUSER&lt;/Item&gt;</code></pre>
+<p>Parser tomu rozumie ako sekvencii konštánt <code>;</code>, <code>%</code>, <code>{</code>, <code>PE</code>, <code>}</code>, <code>%</code>, <code>MKUKATPUSER</code> preložených voliteľnými medzerami.</p></li>
+
+<li><p>Ak nechcete, aby sa medzery automaticky považovali za voliteľné, napíšte:</p>
+<pre><code>&lt;Item Type="const" SpaceSeparator="false" Separator="."&gt;; %.{.PE.} %.MKUKATPUSER&lt;/Item&gt;</code></pre>
+<p>Parser tomu potom rozumie ako <code>;%</code>, <code>{</code>, <code>PE</code>, <code>}%</code>, <code>MKUKATPUSER</code> preloženým voliteľnými medzerami.</p></li>
+</ol>
+
+<h3>5.8 Upload programových súborov robota – automatické oddeľovače vnútri const</h3>
+<p>Atribút <code>Separator</code> už netreba písať ručne – parser rozdelí konštantu na viac častí a pridá voliteľné medzery pred a za každý nealfanumerický znak: <code>"</code>, <code>!</code>, <code>@</code>, <code>$</code>, <code>#</code>, <code>%</code>, <code>.</code>, <code>,</code>, <code>=</code>, <code>:</code>, <code>-</code>, <code>+</code>, <code>{</code>, <code>}</code>, <code>(</code>, <code>)</code>, <code>;</code>.</p>
+<p>Napíšete iba:</p>
+<pre><code>&lt;Item Type="const"&gt;;%{PE}%MKUKATPUSER&lt;/Item&gt;</code></pre>
+<p>Parser tomu rozumie ako sekvencii samostatných konštánt preložených voliteľnými medzerami. Výsledok pri downloade je <code>;%{PE}%MKUKATPUSER</code> – a načítať (upload) sa dá aj zápis s medzerami.</p>
+
+<h2 id="k6">6. DataConfiguration – generovanie FDAT, PDAT, LDAT, XDAT</h2>
+
+<h3>6.1 Popis problému</h3>
+<p>Nasledujúci príklad je zo sveta KUKA pri použití XML pre vlastné pohyby.</p>
+<p>Program KUKA sa skladá z dvoch súborov:</p>
+<ul>
+<li>súbor <strong>SRC</strong> obsahuje logiku programu (inštrukcie),</li>
+<li>súbor <strong>DAT</strong> obsahuje definície dát.</li>
+</ul>
+<p>Dáta v súbore .DAT a inštrukcie v súbore .SRC sú navzájom prepojené. V príklade je dátový typ <code>Xlo4</code> definovaný v .DAT a použitý v inštrukciách .SRC.</p>
+<pre><code>.DAT
+====
+DECL E6POS Xlo4 ={X 1086.01,Y -936,Z 2125.74,A 180,B 36.222,C 0,S 6,T 26}
+
+.SRC
+====
+;FOLD LIN lo4 CONT Llo4 RETR CLO Gun=1 Tool[13] Base[1]:Rear_floor_carrier_stn2 ;
+%{PE}%R5.4.33,%MKUKATPSPOT,%CRETR,%VLIN,%P 1:LIN, 2:lo4, 3:C_DIS, 5:3, 7:Llo4,
+9:#CLO, 11:1, 13:#FIRST
+$BWDSTART = FALSE
+LDAT_ACT= LLlo4
+FDAT_ACT= Flo4
+BAS(#CP_PARAMS,LLlo4.VEL)
+S_ACT.GUN=1
+S_ACT.PAIR=#FIRST
+S_ACT.RETR=#CLO
+S_READY=FALSE
+TRIGGER WHEN DISTANCE=1 DELAY=0.0 DO USERSPOT(#RETR,S_ACT) PRIO=-1
+LIN Xlo4 C_DIS
+WAIT FOR S_READY
+;ENDFOLD</code></pre>
+<p>V MotionConfiguration XML sa doteraz dal prispôsobiť iba súbor SRC – dá sa definovať download vrstva, ktorá vytvorí blok <code>;FOLD → ;ENDFOLD</code>. Názvy a hodnoty dátových typov však automaticky generuje download radiča (z názvu lokácie).</p>
+<p>Ak chcete prispôsobiť konvenciu pomenovania týchto dátových typov, použite konštantné časti, robotické parametre a dynamické parametre. Navyše si môžete prispôsobiť download vrstvu každého dátového typu v súbore .DAT. Napríklad hodnota dátového typu TM1:</p>
+<pre><code>DECL TQM_TQDAT_T TM1= {T11 200, T12 200, T13 200, T14 200, T15 200, T16 200,
+T21 200, T22 200, T23 200, T24 200, T25 200, T26 200, K1 280, K2 280, K3 280,
+K4 280, K5 280, K6 280, O1 20, O2 20, ID 1, OVM 0, TMF 1.0}</code></pre>
+<p>Používatelia si navyše môžu vytvárať vlastné dátové typy.</p>
+
+<h3>6.2 Nový priečinok DataConfiguration</h3>
+<p>Každý radič, ktorý túto funkcionalitu podporuje, vytvorí počas inštalácie radiča priečinok <code>DataConfiguration</code> pod priečinkom radiča.</p>
+<figure><img src="obrazky/str101_1.png" alt="Priečinok DataConfiguration"><figcaption>Priečinky radiča Kuka-Krc: DataConfiguration, MotionConfiguration, OlpConfiguration, Templates a knižnice DLL.</figcaption></figure>
+<p>Do tohto priečinka môžete uložiť jeden alebo viac XML súborov, ktoré sa naparsujú (do cache) pri prvom použití radičom – podľa názvu radiča (a atribútu verzie, ak existuje).</p>
+
+<h3>6.3 Syntax XML pre DataConfiguration</h3>
+<p>V nasledujúcom príklade používateľ definoval názov (<code>&lt;Name&gt;</code>) a hodnotu (<code>&lt;DownloadLayer&gt;</code>) pre dva dátové typy (DAT_PTP, TQM_TQDAT_T):</p>
+<pre><code>&lt;RobotController Name="Kuka-Krc" Version="krc5.3_r01"&gt;
+&lt;RoboticParams&gt;
+  &lt;Param Name="PL_ACC" ValueType="double" MaxVal="100.5" MinVal="0"/&gt;
+  &lt;Param Name="T11" ValueType="int" MaxVal="100" MinVal="50"/&gt;
+&lt;/RoboticParams&gt;
+
+&lt;DataDef&gt;
+  &lt;Data Type="DAT_PTP"&gt;
+    &lt;Name&gt;
+      &lt;Item Type="const"&gt;DAT_PTP&lt;/Item&gt;
+      &lt;Item Type="dynamicParameter"&gt;Loc Id&lt;/Item&gt;
+    &lt;/Name&gt;
+    &lt;DownloadLayer&gt;
+      &lt;Line&gt;
+        &lt;Item Type="const"&gt;DECL DAT_PTP&lt;/Item&gt;
+        &lt;Item Type="dataName"&gt;DAT_PTP&lt;/Item&gt;
+        &lt;Item Type="const"&gt;={PL_ACC&lt;/Item&gt;
+        &lt;Item Type="parameter"&gt;PL_ACC&lt;/Item&gt;
+        &lt;Item Type="const"&gt;}&lt;/Item&gt;
+      &lt;/Line&gt;
+    &lt;/DownloadLayer&gt;
+  &lt;/Data&gt;
+
+  &lt;Data Type="TQM_TQDAT_T"&gt;
+    &lt;Name&gt;
+      &lt;Item Type="const"&gt;TM&lt;/Item&gt;
+      &lt;Item Type="dynamicParameter"&gt;Loc Id&lt;/Item&gt;
+    &lt;/Name&gt;
+    &lt;DownloadLayer&gt;
+      &lt;Line&gt;
+        &lt;Item Type="const"&gt;DECL TQM_TQDAT_T&lt;/Item&gt;
+        &lt;Item Type="dataName"&gt;TQM_TQDAT_T&lt;/Item&gt;
+        &lt;Item Type="const"&gt;={T11&lt;/Item&gt;
+        &lt;Item Type="parameter"&gt;T11&lt;/Item&gt;
+        &lt;Item Type="const"&gt;}&lt;/Item&gt;
+      &lt;/Line&gt;
+    &lt;/DownloadLayer&gt;
+  &lt;/Data&gt;
+&lt;/DataDef&gt;
+&lt;/RobotController&gt;</code></pre>
+<p>V tomto príklade sa názov dátového typu nachádza v jeho hodnote (použitím <code>Item Type="dataName"</code>).</p>
+
+<h3>6.4 Použitie názvov dátových typov v OlpConfiguration XML</h3>
+<ol type="a">
+<li>V OLP XML môžete názvy dátových typov stiahnuť takto: <code>&lt;Item Type="dataName"&gt;XXX&lt;/Item&gt;</code>.</li>
+<li>Služba, ktorá parsuje OlpConfiguration XML, potrebuje aj robotické parametre definované v DataConfiguration. Tie sa dajú v OLP XML používať.</li>
+<li>Každý príkaz by mal implementovať sekciu <code>DataTypeRef</code>, ktorá odkazuje na názvy prepojených dátových typov z DataConfiguration (voliteľné).</li>
+<li>Názov dátového typu sa dá prepísať (voliteľné).</li>
+</ol>
+<pre><code>&lt;RobotController Name="Krc"&gt;
+&lt;RoboticParams&gt;
+  ...
+&lt;/RoboticParams&gt;
+&lt;OlpCommands&gt;
+  &lt;Command Name="MountGun"&gt;
+    &lt;RoboticParamRef&gt;
+      &lt;Param&gt;OperationTask&lt;/Param&gt;
+      &lt;Param&gt;Gun&lt;/Param&gt;
+    &lt;/RoboticParamRef&gt;
+    &lt;DataTypeRef&gt;
+      &lt;Data&gt;TQM_TQDAT_T&lt;/Data&gt;
+      &lt;Data&gt;DAT_PTP&lt;/Data&gt;
+    &lt;/DataTypeRef&gt;
+    &lt;DataDef&gt;
+      &lt;!--Prepis názvu DAT_PTP--&gt;
+      &lt;Data Type="DAT_PTP"&gt;
+        &lt;Name&gt;
+          &lt;Item Type="const"&gt;DAT_PTP&lt;/Item&gt;
+          &lt;Item Type="const"&gt;_&lt;/Item&gt;
+          &lt;Item Type="dynamicParameter"&gt;Loc Id&lt;/Item&gt;
+          &lt;Item Type="const"&gt;_&lt;/Item&gt;
+          &lt;Item Type="parameter"&gt;PL_ACC&lt;/Item&gt;
+        &lt;/Name&gt;
+      &lt;/Data&gt;
+    &lt;/DataDef&gt;
+    ...
+&lt;/RobotController&gt;</code></pre>
+
+<h3>6.5 Použitie názvov dátových typov v MotionConfiguration XML</h3>
+<p>Platí rovnaká logika ako pri OLP:</p>
+<ol type="a">
+<li>V pohybovom XML sa názvy dátových typov stiahnu cez <code>&lt;Item Type="dataName"&gt;XXX&lt;/Item&gt;</code>.</li>
+<li>Služba parsujúca MotionConfiguration XML potrebuje aj robotické parametre definované v DataConfiguration.</li>
+<li>Každý proces by mal implementovať sekciu <code>DataTypeRef</code> (voliteľné).</li>
+<li>Názov dátového typu sa dá prepísať (voliteľné).</li>
+</ol>
+<pre><code>&lt;RobotController Name="Krc"&gt;
+&lt;RoboticParams&gt;
+  ...
+&lt;/RoboticParams&gt;
+&lt;Location Type="WELD"&gt;
+  &lt;Force&gt;
+    ...
+  &lt;/Force&gt;
+  &lt;Process Type="Spot Off"&gt;
+    &lt;DataTypeRef&gt;
+      &lt;Data&gt;TQM_TQDAT_T&lt;/Data&gt;
+      &lt;Data&gt;DAT_PTP&lt;/Data&gt;
+    &lt;/DataTypeRef&gt;
+    &lt;DataDef&gt;
+      &lt;!--Prepis názvu DAT_PTP--&gt;
+      &lt;Data Type="DAT_PTP"&gt;
+        &lt;Name&gt;
+          &lt;Item Type="const"&gt;DAT_PTP&lt;/Item&gt;
+          &lt;Item Type="const"&gt;_&lt;/Item&gt;
+          &lt;Item Type="dynamicParameter"&gt;Loc Id&lt;/Item&gt;
+          &lt;Item Type="const"&gt;_&lt;/Item&gt;
+          &lt;Item Type="parameter"&gt;PL_ACC&lt;/Item&gt;
+        &lt;/Name&gt;
+      &lt;/Data&gt;
+    &lt;/DataDef&gt;
+    &lt;Dialog&gt;
+      ...
+    &lt;/Dialog&gt;
+    ...
+&lt;/RobotController&gt;</code></pre>
+
+<h3>6.6 Upload</h3>
+<p>Služba uploadu načíta hodnotu a názov dátového typu a potom sa z neho pokúsi vyextrahovať robotické a dynamické parametre (iba pri OLP a pohybe, nie pri uploade dataDef), aby mohla použiť prepísané názvy dát.</p>
+<p>Ak sa názov dát nezhoduje s XML, služba uploadu ho preskočí. Aby bol podporovaný, použite koncovú konštantu, napríklad:</p>
+<pre><code>DECL MYDATATYPE &lt;dataName&gt; ={&lt;Definition&gt;}
+
+CONST MYDATATYPE &lt;dataName&gt; := [&lt;Definition&gt;]</code></pre>
+
+<h3>6.7 Zdieľané RoboticParams a Aliases</h3>
+<p><code>RoboticParams</code> a <code>Aliases</code> definované v DataConfiguration XML sú spoločné a zdieľané medzi OLP konfiguráciou a Motion konfiguráciou. Používateľ ich tak môže definovať na jednom mieste (DataConfiguration) a odkazovať sa na ne z OLP aj pohybových XML súborov.</p>
+
+<h2 id="k7">7. Path Template Configuration – šablóny robotických dráh</h2>
+
+<h3>7.1 Úvod</h3>
+<p>Často je potrebné nakonfigurovať parametre lokácií (nástroj, rýchlosť, zóna atď.), ktoré definujú dráhu pre konkrétny proces. Okrem toho sa do dráhy pridávajú nábehové a odbehové (approach a depart) via lokácie s rovnakými parametrami. Každá akcia môže do vybranej dráhy pridať lokácie, zmeniť orientáciu lokácií, robotické parametre a OLP príkazy. Napríklad pri lepení nastavuje používateľ začiatok a koniec lepenia a rýchlosť robota – parametre špecifické pre proces, ktoré sa majú použiť na každú lepiacu dráhu.</p>
+<p>Process Simulate / RobotExpert umožňuje definovať akcie v XML šablóne a aplikovať ich na viacero operácií naraz. Môžete nastaviť parametre a OLP príkazy pre operácie aj lokácie, pridať nábehové a odbehové via lokácie a nastaviť ich súradnice. V XML šablóne môžete definovať mnoho akcií a aplikovať ich jediným kliknutím – ušetríte tak opakovanú ručnú konfiguráciu, zvýšite produktivitu a znížite chybovosť.</p>
+<figure><img src="obrazky/str109_1.png" alt="Dialóg Apply Path Template Action"><figcaption>Dialóg Apply Path Template (Kuka-Krc) so zoznamom operácií, výberom akcie (tlačidlo Select), tlačidlom Set pre parametre a popisom akcie.</figcaption></figure>
+<p>Robotické šablóny sa ukladajú ako XML súbory v určených priečinkoch. Keďže každý radič má vlastné OLP príkazy (štandardné, špecifické a vlastné) a pohybové parametre (bežné, komplexné a vlastné), každý radič potrebuje vlastný priečinok <code>PathTemplateConfiguration</code>. Priečinok sa vytvorí počas inštalácie radiča a nachádza sa v <code>…\eMPower\Robotics\Olp\&lt;Controller name&gt;\PathTemplateConfiguration\</code>. Berú sa do úvahy všetky XML súbory v tomto priečinku bez ohľadu na ich názvy.</p>
+<p><strong>Tlačidlo Set:</strong> umožňuje nastaviť hodnoty parametrov pre pohyb a OLP cez vygenerovaný dialóg. Používateľ môže opätovne upraviť aj staré hodnoty (z posledného nastavenia). Vygenerovaný dialóg (s rovnakým vzhľadom ako vlastné OLP a pohybové dialógy) sa otvorí, aby sa nastavili všetky robotické parametre bez hodnôt a všetky vlastné OLP príkazy, ktoré majú aspoň jeden parameter bez predvolenej hodnoty.</p>
+<p><strong>Príklad jednoduchých akcií:</strong></p>
+<ul>
+<li><strong>Akcia A</strong> – pre prvú seam lokáciu s typom procesu Polishing:
+<ul><li>nastav <code>RRS_MOTION_TYPE</code> na 2</li><li>pridaj OLP príkaz <code>OpenPaintGun</code></li><li>pridaj OLP príkaz <code>SetPaintBrush 3</code></li><li>zmeň farbu lokácie na žltú</li></ul></li>
+<li><strong>Akcia B</strong> – pre poslednú seam lokáciu s typom procesu Polishing:
+<ul><li>nastav <code>RRS_MOTION_TYPE</code> na 2</li><li>pridaj OLP príkaz <code>ClosePaintGun</code></li><li>zmeň farbu lokácie na červenú</li></ul></li>
+</ul>
+<p>Akcie sa dajú aplikovať na vybrané operácie.</p>
+
+<h3>7.2 Popis šablóny robotickej dráhy</h3>
+<figure><img src="obrazky/str110_1.png" alt="Základná štruktúra XML šablóny"><figcaption>Základná štruktúra XML šablóny: RobotController → ActionList → Action → ActionFilter.</figcaption></figure>
+
+<h3>7.3 RobotController</h3>
+<pre><code>&lt;RobotController Name="Abb-Rapid" Version="4.0.91.s4cplus, 5.07.01.irc5"&gt;</code></pre>
+<ul>
+<li><strong>Name [@,1]</strong> – názov radiča.</li>
+<li><strong>Version [@,0-1]</strong> – relevantné verzie radiča, ktoré majú byť s týmto XML spojené, aby sa odlíšili rôzne verzie toho istého radiča. Verzia radiča je definovaná v súbore <code>rrs.xml</code> aplikáciou Robot Properties. Ak atribút nie je definovaný, predvolená hodnota je <code>All</code>.</li>
+</ul>
+
+<h3>7.4 ActionList</h3>
+<figure><img src="obrazky/str111_1.png" alt="Príklad ActionList"><figcaption>Príklad zoznamu akcií v XML šablóne dráhy pre ABB robota.</figcaption></figure>
+<p>Príklad jedného uzla <code>&lt;Action&gt;</code>:</p>
+<pre><code>&lt;Action Name="SetAllLocations" LocRange="All"
+        LocationTypes="Via,Weld" ProcessTypes="Polishing,Glue-on" MotionTypes="1,2"
+        Description="set all location which process = Polishing: \n the speed[20] \n the zone[z50]"&gt;
+  ...
+  //Todo action
+  ...
+&lt;/Action&gt;</code></pre>
+<p>Každý uzol <code>&lt;Action&gt;</code> obsahuje tieto atribúty:</p>
+<ul>
+<li><strong>Name [@,1]</strong> – názov akcie, musí byť jedinečný. Ak názov obsahuje <code>|</code>, ide o podmenu; ak končí znakom <code>-</code>, ide o oddeľovač.
+<pre><code>&lt;Action Name="Paint|Correct TCP"&gt; ... &lt;/Action&gt;
+&lt;Action Name="Paint|-"&gt;&lt;/Action&gt;
+&lt;Action Name="Paint | CleanAll"&gt; ... &lt;/Action&gt;</code></pre></li>
+</ul>
+<figure><img src="obrazky/str112_1.png" alt="Ponuka Select s podmenu"><figcaption>Výsledok – ponuka Select s podmenu Paint obsahujúcim Correct TCP a CleanAll.</figcaption></figure>
+<ul>
+<li><strong>ProcessTypes [@, 0-1]</strong> – filtruje lokácie podľa typu procesu definovaného vo vlastnom pohybovom XML (pozri aj stĺpec Process Type v Path Editore). Môže mať viac hodnôt.</li>
+<li><strong>MotionTypes [@, 0-1]</strong> – filtruje lokácie podľa typu pohybu. Môže mať viac hodnôt.</li>
+<li><strong>Description [@, 0-1]</strong> – popis akcie zobrazený v dialógu Apply Path Template Action.</li>
+</ul>
+<div class="note"><strong>Poznámka:</strong> Výsledný filter v uvedenom príklade je [SeamRange a LocRange a LocationTypes a ProcessTypes a MotionTypes]. Všetky indexy musia byť väčšie ako nula.</div>
+
+<h3>7.5 LocationTypes (typy lokácií)</h3>
+<p>Filtruje lokácie podľa ich podpory vlastného pohybu. Možné hodnoty: <code>Via</code>, <code>Weld</code>, <code>Seam Start</code>, <code>Seam End</code>, <code>Seam Middle</code>, <code>Pick</code>, <code>Place</code>.</p>
+<pre><code>&lt;Action Name="AddLocAction" LocationTypes="Pick,Place"&gt;
+  &lt;Color Value="RED"/&gt;
+&lt;/Action&gt;</code></pre>
+
+<h3>7.6 LocRange (rozsah lokácií)</h3>
+<p>Definuje lokácie, na ktorých sa má akcia vykonať. Možné hodnoty: <code>All</code> (predvolená), <code>First</code>, <code>Last</code>, <code>n1</code>, <code>Last - n1</code>, <code>"n1-n2"</code>, <code>"n1,n2,n3"</code>, <code>Operation</code>. Hodnota <code>Operation</code> nefunguje so žiadnymi inými filtrami – použite ju iba pre OLP príkazy, farbu a robotický parameter na úrovni vybranej operácie.</p>
+<p>Dostupná je aj syntax <code>"&lt;od&gt; - &lt;po&gt; &lt;: krok – voliteľný&gt;"</code>:</p>
+<ul>
+<li><code>"4-8:2"</code> – od 4. po 8. lokáciu, každá druhá</li>
+<li><code>"4-Last:2"</code> – od 4. po poslednú, každá druhá</li>
+<li><code>"4-(Last-5):2"</code> – od 4. po piatu od konca, každá druhá</li>
+<li><code>"(Last-4)-(Last-1)"</code></li>
+</ul>
+
+<h3>7.7 SeamRange (rozsah húseníc)</h3>
+<p>Definuje operácie húseníc (pod vybranou spojitou zloženou operáciou), na ktorých sa má akcia vykonať. Možné hodnoty: <code>All</code> (vrátane všetkých via a seam lokácií; predvolená), <code>First</code>, <code>Last</code>, <code>n1</code>, <code>Last - n1</code>, <code>"n1-n2"</code>, <code>"n1,n2,n3"</code>. Podporovaná je aj syntax s krokom, rovnako ako v 7.6.</p>
+
+<h3>7.8 Param</h3>
+<p>Tento element popisuje novú hodnotu jedného robotického parametra:</p>
+<pre><code>&lt;Action Name="SetAllLocations" LocRange="All"&gt;
+  &lt;Param RemoveAll="true"/&gt;
+  &lt;Param Name="RRS_MOTION_TYPE" Value="2"/&gt;
+  &lt;Param Name="Speed Data"/&gt;
+  &lt;Param Name="Wobj Data" Dynamic="true" Value="wobj0"/&gt;
+  &lt;Param Name="Zone Data" Dynamic="true" Remove="true"/&gt;
+&lt;/Action&gt;</code></pre>
+<ul>
+<li><strong>Name [@,0-1]</strong> – názov parametra. Plne je definovaný (min, max, zoznam, typ atď.) vo vlastnom pohybovom XML. Povinný, ak nepoužijete atribút <code>RemoveAll</code>.</li>
+<li><strong>Value [@,0-1]</strong> – nová hodnota parametra. Ak sa vynechá, systém zobrazí dialóg so všetkými nedefinovanými parametrami vykonávanej akcie a používateľ im nastaví hodnoty. Pre komplexné parametre a parametre typu DynamicCombo je hodnota povinná, ak nepoužijete aj <code>Remove</code> alebo <code>RemoveAll</code>.</li>
+<li><strong>Dynamic [@,0-1]</strong> – pre komplexné parametre. Platné sú iba komplexné parametre s právom na zápis v <code>C:\ProgramData\Tecnomatix\Process Simulate\&lt;PS Version&gt;\Robotics\PathEditor\AvailableColumns\*.xml</code>. Jedinou hodnotou je <code>True</code>.</li>
+<li><strong>Remove [@,0-1]</strong> – odstráni z lokácie konkrétne robotické parametre. Jedinou hodnotou je <code>True</code>.</li>
+<li><strong>RemoveAll [@,0-1]</strong> – odstráni z lokácie všetky robotické parametre. Jedinou hodnotou je <code>True</code>.</li>
+</ul>
+
+<h3>7.9 Nastavenie dynamických parametrov</h3>
+<p>Za behu môžete cez tlačidlo <strong>Set</strong> definovať aj dynamické parametre, nielen hodnoty bežných parametrov:</p>
+<pre><code>&lt;Action Name="Set Dynamic Parameters"&gt;
+  &lt;Param Name="Gun Wait" Dynamic="true"/&gt;
+  &lt;Param Name="Speed" Dynamic="true"/&gt;
+  &lt;Param Name="Zone" Dynamic="true"/&gt;
+&lt;/Action&gt;</code></pre>
+<figure><img src="obrazky/str115_1.png" alt="Dialóg Set Dynamic Parameters"><figcaption>Vygenerovaný dialóg na nastavenie dynamických parametrov pred aplikovaním šablóny.</figcaption></figure>
+
+<h3>7.10 Param s výrazom (Expression)</h3>
+<p>Ak má hodnota parametra závisieť od výpočtu z iných parametrov, použite element Expression:</p>
+<pre><code>&lt;Action Name="AddLocAction"&gt;
+  &lt;Param Name="Speed" Dynamic="True" Expression="![CDATA[('A15_Speed m/min'/60)]]"/&gt;
+  &lt;Param Name="MySpeed" Expression="![CDATA[('A15_Speed m/min'/60)]]"/&gt;
+&lt;/Action&gt;</code></pre>
+
+<h3>7.11 Kopírovanie existujúcich parametrov</h3>
+<p>Na skopírovanie existujúcich robotických parametrov zo susednej zdrojovej lokácie na inú lokáciu použite <code>CopyFrom</code> (s celočíselnou hodnotou):</p>
+<pre><code>&lt;Action Name="CopyParameters" LocRange="last"&gt;
+  &lt;Param Name="SpindleRPM_D" CopyFrom="-2" CopyParamName="SpindleRPM_S"/&gt;
+  &lt;Param Name="Zone" Dynamic="true" CopyFrom="-2" ApplyOn="-1"/&gt;
+&lt;/Action&gt;</code></pre>
+<p>Dá sa to použiť aj na nesusediace operácie, t. j. na všetky seam a via lokácie pod nadradenou spojitou operáciou.</p>
+
+<h3>7.12 OLP</h3>
+<p>Tento element popisuje pridanie alebo odstránenie jedného OLP príkazu (štandardného, špecifického pre radič alebo vlastného).</p>
+<pre><code>&lt;Action Name="SetOLPCommands" LocRange="3-8"&gt;
+  &lt;Olp RemoveAll="true"/&gt;
+  &lt;Olp Name="Check Grp 2 State= OPN at Start Delay= 2 ms"/&gt;
+  &lt;Olp Name="# GunToState" Remove="true"/&gt;
+  &lt;Olp Name="PULSE 2 'sig1' State= TRUE Time= 3 sec"/&gt;
+  &lt;Olp Name="PULSE 4 'sig2' State= FALSE Time= 5 sec"/&gt;
+  &lt;Olp CustomizedDialogName="OrdreArret"/&gt;
+&lt;/Action&gt;</code></pre>
+<ul>
+<li><strong>Name [@,0-1]</strong> – názov OLP príkazu. Pre štandardný alebo pre radič špecifický príkaz systém vytvorí na lokácii príkaz vo forme voľného textu. Pre štandardný vlastný radič vytvorí zložený príkaz. Ak už na lokácii existuje OLP príkaz s rovnakým názvom, pridá sa nový.</li>
+<li><strong>Remove [@,0-1]</strong> – odstráni všetky OLP príkazy s rovnakým celým textovým obsahom. Pri vlastnom OLP príkaze odstráni príkaz vygenerovaný cez <code>CustomizedDialogName</code>. Jedinou hodnotou je <code>True</code>.</li>
+<li><strong>RemoveAll [@,0-1]</strong> – odstráni z lokácie všetky OLP príkazy. Jedinou hodnotou je <code>True</code>.</li>
+<li><strong>CustomizedDialogName [@,0-1]</strong> – názov vlastného dialógu, ktorý obsahuje jeden alebo viac OLP príkazov definovaných v XML vlastných OLP príkazov.
+<ul>
+<li>Ak sú vo vlastnom OLP XML predvolené hodnoty pre všetky parametre tohto príkazu, služba použije tento súbor a OLP príkaz definuje automaticky.</li>
+<li>Inak systém zobrazí dialóg so všetkými nedefinovanými parametrami vykonávanej akcie a používateľ im nastaví hodnoty.</li>
+</ul>
+Ak je pre tento dialóg v OLP XML použitý atribút <code>Id</code>, jeho hodnota sa má použiť aj tu ako hodnota <code>CustomizedDialogName</code>.</li>
+<li><strong>CreationIndex [@,0-1]</strong> – ak je uvedený, nový OLP príkaz sa umiestni na určené miesto (index) v zozname OLP príkazov lokácie. Index musí byť celé číslo väčšie ako 0, inak sa pri aplikovaní šablóny zobrazí varovanie.</li>
+</ul>
+<p>Po aplikovaní akcie musí skutočný radič podporovať: 1. úpravu (cez TP), 2. simuláciu, 3. download, 4. upload.</p>
+
+<h3>7.13 Replace (nahradenie)</h3>
+<p>Ak chcete nahradiť starý OLP príkaz novým, použite:</p>
+<ul>
+<li><strong>ReplaceOLPStartWith [@,0-1]</strong> – nahradí akýkoľvek OLP príkaz, ktorý začína hodnotou tohto atribútu.</li>
+<li><strong>ReplaceCustomizedDialogName [@,0-1]</strong> – nahradí akýkoľvek vlastný OLP príkaz vytvorený dialógom s názvom rovným hodnote tohto atribútu.</li>
+</ul>
+<pre><code>&lt;Action Name="ReplaceOldOlp" Description="Replace old OLP with a new one"&gt;
+  &lt;Olp Name="PULSE 1 'sig1' State= TRUE Time= 1 sec" ReplaceOLPStartWith="PULSE 2"/&gt;
+  &lt;Olp CustomizedDialogName="Machining | Change RPM"
+       ReplaceCustomizedDialogName="Machining |Stop Motor"/&gt;
+  &lt;Olp CustomizedDialogName="Machining | Stop Motor"/&gt;
+  &lt;Olp Name="Bingo" ReplaceOLPStartWith="StopMotor"/&gt;
+&lt;/Action&gt;</code></pre>
+<figure><img src="obrazky/str118_1.png" alt="Nahradenie OLP príkazov pred a po"><figcaption>Before / After – zoznam OLP príkazov lokácie pred a po aplikovaní akcie nahradenia.</figcaption></figure>
+
+<h3>7.14 Update</h3>
+<p>Táto akcia umožňuje aktualizovať parametre OLP na základe hodnoty robotického parametra. Je relevantná iba pre OLP parametre definované ako <code>UseLocationParamVal</code>. Musíte uviesť názov OLP dialógu a parameter, ktorý sa má aktualizovať.</p>
+<pre><code>&lt;Update Name="DialogName.ParameterName"/&gt;</code></pre>
+
+<h3>7.15 Color (farba)</h3>
+<p>Tento element popisuje nastavenie novej farby lokácie.</p>
+<pre><code>&lt;Action Name="SetColor" LocRange="First"&gt;
+  &lt;Color Value="YELLOW"/&gt;
+&lt;/Action&gt;</code></pre>
+<p><strong>Value [@,1]</strong> – názov farby. Možné hodnoty: Red, green, yellow, blue, magenta, cyan, orange, white, pink, gray, brown, wood, dark green, dark red, dark brown, light blue, black.</p>
+
+<h3>7.16 Kopírovanie konfigurácie</h3>
+<p>Pri kopírovaní lokácie môžete nastaviť <code>CopyConfiguration</code> na <code>True</code>, ak chcete na novú lokáciu skopírovať aj konfiguráciu zdrojovej lokácie.</p>
+<pre><code>&lt;RobotController Name="Default"&gt;
+&lt;ActionList&gt;
+  &lt;Action Name="AddLocWithConf" LocRange="First"&gt;
+    &lt;AddLoc NameSuffix="_sameConfiguration" Placed="after"
+            RefLoc="itself" CopyConfiguration="true" /&gt;
+  &lt;/Action&gt;
+
+  &lt;Action Name="SetConfigurationForLocations" LocRange="2-5"&gt;
+    &lt;CopyConfiguration CopyFrom="-1" /&gt;
+  &lt;/Action&gt;
+&lt;/ActionList&gt;
+&lt;/RobotController&gt;</code></pre>
+<p>Konfiguráciu ľubovoľnej lokácie tak môžete skopírovať aj na iné lokácie – použite príkaz <code>CopyConfiguration</code> a nastavte <code>CopyFrom</code> na zdrojovú lokáciu.</p>
+
+<h3>7.17 DynamicAlignment</h3>
+<p>Táto akcia vykoná dynamické zarovnanie pre lokácie na namontovanom obrobku. Počas vykonávania robot skočí na lokáciu a <code>DynamicAlignment</code> zarovná lokáciu na RTCP rám.</p>
+<pre><code>&lt;Action Name="AlignRTCPWeldLocations"&gt;
+  &lt;DynamicAlignment/&gt;
+&lt;/Action&gt;</code></pre>
+<p>Akcia je obmedzená na lokácie bez externých osí a bez naučených informácií.</p>
+
+<h3>7.18 MoveLoc</h3>
+<p>Tento element popisuje posun lokácií v jednej alebo viacerých súradniciach. Pri zvarových lokáciách sa nastavujú iba súradnice Rx, Ry, Rz. Ak sú tieto súradnice mimo rozsahu definovaného v Options, akcia zlyhá.</p>
+<pre><code>&lt;Action Name="MoveX10Z20" LocRange="All"&gt;
+  &lt;MoveLoc RelX="10" RelZ="20" IgnoreLimitations="true"/&gt;
+&lt;/Action&gt;</code></pre>
+<ul>
+<li><strong>RelX, RelY, RelZ [@, 0-1]</strong> – pripočíta hodnotu k súradnici X, Y, resp. Z.</li>
+<li><strong>RelRX, RelRY, RelRZ [@, 0-1]</strong> – pripočíta hodnotu k súradnici RX, RY, resp. RZ.</li>
+<li><strong>IgnoreLimitations [@, 0-1]</strong> – ignoruje obmedzenia definované v Options. Jedinou hodnotou je <code>True</code>.</li>
+<li><strong>UseWorldCoordinates [@, 0-1]</strong> – súradnice sa vzťahujú na nulový bod, teda ide o absolútne hodnoty. Jedinou hodnotou je <code>True</code>.</li>
+</ul>
+
+<h3>7.19 Relocate</h3>
+<p>Tento element popisuje premiestnenie lokácií podľa rozdielu medzi dvoma TCP rámami – napríklad keď vymeníte zvarovacie kliešte za iné s odlišnou osou x.</p>
+<p>Do vlastného pohybového XML pridajte:</p>
+<pre><code>&lt;Param Name="TCPF1" ValueType="TxObject" TxValidatorType="Frame"/&gt;
+&lt;Param Name="TCPF2" ValueType="TxObject" TxValidatorType="Frame"/&gt;
+&lt;Param Name="ScopeType" ValueType="string" Default="All"&gt;
+  &lt;ComboDef&gt;
+    &lt;ElmDef&gt;All&lt;/ElmDef&gt;
+    &lt;ElmDef&gt;Rotation&lt;/ElmDef&gt;
+    &lt;ElmDef&gt;Translation&lt;/ElmDef&gt;
+  &lt;/ComboDef&gt;
+&lt;/Param&gt;</code></pre>
+<p>Do vlastnej PathTemplate pridajte:</p>
+<pre><code>&lt;Action Name="Correct TCP"&gt;
+  &lt;Relocate FromParam="TCPF1" ToParam="TCPF2" Scope="ScopeType" IgnoreLimitations="true"/&gt;
+&lt;/Action&gt;</code></pre>
+<ul>
+<li><strong>From [@,1]</strong> – definuje vzdialenosť od prvého rámu.</li>
+<li><strong>To [@,1]</strong> – definuje vzdialenosť k druhému rámu.</li>
+<li><strong>Scope [@,1]</strong> – definuje rozsah posunu [All, Rotation alebo Translation].</li>
+<li><strong>IgnoreLimitations [@,0-1]</strong> – ignoruje obmedzenia definované v Options. Jedinou hodnotou je <code>True</code>.</li>
+</ul>
+<p>Po kliknutí na OK v dialógu Apply Path Template Action sa zobrazí dialóg Correct TCP.</p>
+<figure><img src="obrazky/str121_1.png" alt="Dialóg Correct TCP"><figcaption>Dialóg Correct TCP – výber TCPF1, TCPF2 a typu rozsahu (All, Rotation, Translation).</figcaption></figure>
+<p>Vyberte TCPF rámy a typ rozsahu (druh rozdielu medzi rámami). Po kliknutí na OK systém akciu vykoná.</p>
+
+<h3>7.20 AddLoc</h3>
+<p>Tento element popisuje vytvorenie nových lokácií a nastavenie ich súradníc v stupňoch (hodnota typu double). V sekcii <code>AddLoc</code> definujete typ lokácie a čo sa má s novou lokáciou urobiť. Mimo sekcie <code>AddLoc</code> systém znova skontroluje, či filter platí na danú operáciu, a pokračuje s novým výstupom filtra.</p>
+<div class="note"><strong>Poznámka:</strong> ak filtrom akcie prejde viac lokácií, každá lokácia vstupujúca do operácie môže zmeniť lokáciu, na ktorú ukazuje <code>RefLoc</code>.</div>
+<pre><code>&lt;Action Name="AddApproachLocation" LocRange="First"&gt;
+  &lt;AddLoc Name="approachViaLoc" RefLoc="First" Placed="After" CopyAttachment="true"
+          RelX="-100.05" RelZ="100.05"&gt;
+    &lt;!--platí len pre pridanú via lokáciu--&gt;
+    &lt;Param Name="Speed Data" Dynamic="true" Value="z1000"/&gt;
+  &lt;/AddLoc&gt;
+  &lt;!--platí pre výstup filtra--&gt;
+  &lt;Param Name="RRS_MOTION_TYPE" Value="2"/&gt;
+&lt;/Action&gt;</code></pre>
+<ul>
+<li><strong>Name [@, 0-1]</strong> – názov novej via lokácie.</li>
+<li><strong>NameSuffix [@, 0-1]</strong> – spojí názov <code>RefLoc</code> s touto príponou (príklad 1).</li>
+<li><strong>NameSuffixIndex [@, 0-1]</strong> – spojí názov <code>RefLoc</code>, podčiarkovník a túto indexovú hodnotu (príklad 2).</li>
+<li><strong>RefLoc [@, 1]</strong> – lokácia relatívne k aktuálnemu <code>LocRange</code>, ktorej súradnice nová via lokácia preberá. Možné hodnoty (vzťahujú sa na lokácie po filtroch akcie): <code>First</code>, <code>Last</code>, <code>Itself</code>, <code>PreviousLoc</code>, <code>NextLoc</code>.</li>
+<li><strong>Placed [@, 1]</strong> – nová lokácia sa vytvorí pred alebo za aktuálnou lokáciou <code>LocRange</code>. Možné hodnoty: <code>Before</code>, <code>After</code>. Pri seam lokáciách je ďalšou hodnotou <code>Automatic</code> – nová lokácia sa automaticky vloží na správne miesto pozdĺž seam MFG. Pri hodnote <code>Automatic</code> treba v tej istej akcii pridať aj <code>LocType="seam"</code>.</li>
+<li><strong>LocType [@, 0-1]</strong>:
+<ul>
+<li><code>via</code> – vytvorí via lokáciu; <code>seam</code> – vytvorí seam lokáciu pod seam operáciou. Bez tohto atribútu sa predvolene vytvára via lokácia.</li>
+<li><code>pick</code> – vytvorí pick lokáciu pod operáciou Pick and Place</li>
+<li><code>place</code> – vytvorí place lokáciu pod operáciou Pick and Place</li>
+</ul></li>
+<li><strong>CopyAttachment [@,0-1]</strong> – skopíruje pripojenie (attachment) lokácie <code>LocRange</code>. Jedinou hodnotou je <code>True</code>.</li>
+<li><strong>RelX, RelY, RelZ, RelRX, RelRY, RelRZ [@, 0-1]</strong> – pripočítajú hodnotu k príslušnej súradnici lokácie <code>RefLoc</code>.</li>
+<li><strong>RefreshFilter [@, 0-1]</strong> – po vytvorení lokácie obnoví filter akcie a až potom pokračuje. Jedinou hodnotou je <code>True</code>.</li>
+<li><strong>UseWorldCoordinates [@, 0-1]</strong> – súradnice sa vzťahujú na nulový bod (absolútne hodnoty). Jedinou hodnotou je <code>True</code>.</li>
+<li><strong>Distance [@, 0-1]</strong> – súradnice novej lokácie možno definovať vzdialenosťou pozdĺž MFG od <code>RefLoc</code>. Použiteľné iba pre seam.</li>
+<li><strong>IgnoreRefLocAlignment [@, 0-1]</strong> – ignoruje zarovnanie vykonané cez <code>RefLoc</code> v Path Template. Výsledok má byť rovnaký ako pri funkcii Insert Location Inside Seam. Jedinou hodnotou je <code>True</code>.</li>
+</ul>
+<p><strong>Príklad 1:</strong></p>
+<pre><code>&lt;Action Name="AddDepartLocation"&gt;
+  &lt;AddLoc NameSuffix="_1" Placed="After" RefLoc="Itself"/&gt;
+&lt;/Action&gt;</code></pre>
+<figure><img src="obrazky/str123_1.png" alt="Stav pred aplikovaním akcie"><figcaption>Pred: operácia Weld_Op2 s lokáciami via9 až via17.</figcaption></figure>
+<figure><img src="obrazky/str124_1.png" alt="Stav po aplikovaní akcie s NameSuffix"><figcaption>Po: za každou lokáciou pribudla nová s príponou _1 (via9_1, via10_1, …).</figcaption></figure>
+<p><strong>Príklad 2:</strong></p>
+<pre><code>&lt;Action Name="AddLocations"&gt;
+  &lt;AddLoc NameSuffixIndex="8" Placed="After" RefLoc="Itself"/&gt;
+&lt;/Action&gt;</code></pre>
+<div class="note"><strong>Poznámka:</strong> systém pracuje so všetkými lokáciami postupne, bez ohľadu na operácie, z ktorých pochádzajú.</div>
+<figure><img src="obrazky/str124_2.png" alt="Stav pred aplikovaním NameSuffixIndex"><figcaption>Pred: dve operácie Weld_Op s lokáciami via1 až via17.</figcaption></figure>
+<figure><img src="obrazky/str125_1.png" alt="Stav po aplikovaní NameSuffixIndex"><figcaption>Po: ku každej lokácii pribudla nová s číslovanou príponou.</figcaption></figure>
+<p><strong>Príklad 3:</strong></p>
+<figure><img src="obrazky/str125_2.png" alt="Východiskový stav v Path Editore"><figcaption>Východiskový stav operácie Weld_Op v Path Editore.</figcaption></figure>
+<pre><code>&lt;Action Name="AddTwoLocations" LocRange="First"&gt;
+  &lt;AddLoc Name="firstAddVia" RefLoc="First" RefreshFilter="true" Placed="Before"
+          RelX="-100.0" RelZ="100.0"&gt;
+    &lt;Param Name="Speed" Value="20"/&gt;
+  &lt;/AddLoc&gt;
+  &lt;AddLoc Name="secondAddVia" RefLoc="First" RefreshFilter="true" Placed="After"
+          RelY="-80.0" RelRZ="80.0"&gt;
+    &lt;Param Name="Speed" Value="30"/&gt;
+  &lt;/AddLoc&gt;
+  &lt;!--platí pre novú lokáciu, keďže LocRange = First--&gt;
+  &lt;Param Name="RRS_MOTION_TYPE" Value="2"/&gt;
+&lt;/Action&gt;</code></pre>
+<figure><img src="obrazky/str126_1.png" alt="Po prvom riadku akcie"><figcaption>Po vykonaní prvého riadka akcie (RefLoc aj LocRange sú via1 – prvá lokácia operácie) pribudla lokácia firstAddVia s rýchlosťou 20.</figcaption></figure>
+<figure><img src="obrazky/str127_1.png" alt="Po druhom riadku akcie"><figcaption>Po vykonaní ďalšieho riadka (RefLoc a LocRange sú teraz firstAddVia) pribudla secondAddVia s rýchlosťou 30.</figcaption></figure>
+<figure><img src="obrazky/str127_2.png" alt="Po nastavení RRS_MOTION_TYPE"><figcaption>Po vykonaní posledného riadka sa na prvej lokácii nastaví RRS_MOTION_TYPE = 2.</figcaption></figure>
+<p><strong>Príklad 4</strong> (Pick &amp; Place):</p>
+<pre><code>&lt;RobotController Name="Default" Version="All"&gt;
+&lt;ActionList&gt;
+  &lt;Action Name="AddPlace" Description="Add pick_and_place locations" LocationTypes="place"&gt;
+    &lt;AddLoc Name="place_2" LocType="place" Placed="after" RefLoc="first"
+            PoseName="HOME" CopyAttachment="true"&gt;
+      &lt;Color Value="GREEN" /&gt;
+  &lt;/Action&gt;
+&lt;/ActionList&gt;
+&lt;/RobotController&gt;</code></pre>
+<figure><img src="obrazky/str127_3.png" alt="Výsledok pridania place lokácie"><figcaption>Výsledok – pod operáciou Pick and Place pribudla lokácia place_2.</figcaption></figure>
+
+<h3>7.21 AddLoc, MoveLoc – použitie hodnôt parametrov za behu</h3>
+<p>Hodnoty <code>RelX</code>, <code>RelY</code>, <code>RelZ</code> atď. je možné nastaviť za behu tlačidlom <strong>Set</strong> v dialógu Apply Path Template. Stačí polohové parametre nastaviť na <code>"?"</code>:</p>
+<pre><code>&lt;Action Name="Test1" LocRange="1"&gt;
+  &lt;AddLoc NameSuffix="_newBySetValue" LocType="via" Placed="after"
+          RefLoc="itself" RelX="?"&gt;
+    &lt;Color Value="Brown"/&gt;
+  &lt;/AddLoc&gt;
+&lt;/Action&gt;</code></pre>
+
+<h3>7.22 Atribút CopyExternals</h3>
+<p>Skopíruje externé osi z referenčnej lokácie na novú lokáciu.</p>
+<pre><code>&lt;AddLoc NameSuffix="approach" Placed="before" RefLoc="itself"
+        CopyAttachment="true" CopyExternals="true" RelZ="50"&gt;</code></pre>
+
+<h3>7.23 Atribút ApplyOn</h3>
+<p>V rámci každej akcie môžete vykonávať rôzne inštrukcie. Ak sa má inštrukcia týkať nie aktuálnej lokácie, ale konkrétnej lokácie pred ňou alebo za ňou, použite atribút <code>ApplyOn</code>:</p>
+<pre><code>&lt;Action Name="ApplyOnTest" LocRange="last"&gt;
+  &lt;Olp CustomizedDialogName="Prepare Motor" ApplyOn="-1"/&gt;
+  &lt;Olp CustomizedDialogName="Start Motor"/&gt;
+  &lt;Olp CustomizedDialogName="Motor Working" ApplyOn="+1" BetweenOperations="true" /&gt;
+&lt;/Action&gt;</code></pre>
+<p>V tomto príklade sa OLP <em>Start Motor</em> vytvorí na poslednej lokácii (kvôli <code>LocRange="last"</code>) a OLP <em>Prepare Motor</em> na predposlednej lokácii (kvôli <code>ApplyOn="-1"</code>).</p>
+<p>OLP <em>Motor Working</em> sa vytvorí na prvej lokácii nasledujúcej operácie, čo je možné iba pri <code>BetweenOperations="true"</code> (jediná povolená hodnota). Nasledujúca operácia sa určí podľa väzieb v Sequence Editore. Ak väzba na nasledujúcu operáciu neexistuje alebo ich je viac, zobrazia sa chybové hlásenia.</p>
+<p>Atribút <code>ApplyOn</code> sa dá použiť aj na nesusediace operácie, t. j. na všetky seam a via lokácie pod nadradenou spojitou operáciou.</p>
+
+<h3>7.24 Rename (premenovanie)</h3>
+<p>Na automatické premenovanie lokácií použite akciu <code>Rename</code>:</p>
+<ul>
+<li><strong>Name [@,0-1]</strong> – premenuje na túto hodnotu.</li>
+<li><strong>NameSuffix [@,0-1]</strong> – pripojí túto hodnotu za názov.</li>
+<li><strong>NamePrefix</strong> – pripojí túto hodnotu pred názov.</li>
+<li><strong>NameSuffixIndex [@,0-1]</strong> – pripojí túto indexovú hodnotu.</li>
+</ul>
+<figure><img src="obrazky/str129_1.png" alt="Stav pred premenovaním operácie"><figcaption>Pred: operácia Op_MWP s lokáciami via1, via3, via7, via9.</figcaption></figure>
+<figure><img src="obrazky/str129_2.png" alt="XML akcie premenovania operácie"><figcaption>Aplikovaná akcia – premenovanie operácie (LocRange="Operation").</figcaption></figure>
+<figure><img src="obrazky/str129_3.png" alt="Výsledok premenovania operácie"><figcaption>Výsledok – operácia sa volá Task_Op.</figcaption></figure>
+<figure><img src="obrazky/str129_4.png" alt="XML akcie premenovania lokácií"><figcaption>Aplikovaná akcia s prefixom, príponou a indexom.</figcaption></figure>
+<figure><img src="obrazky/str129_5.png" alt="Výsledok premenovania lokácií"><figcaption>Výsledok – lokácie A_Task_Z_1 až A_Task_Z_4.</figcaption></figure>
+
+<h3>7.25 AllWithOperation ako hodnota LocRange</h3>
+<p>Atribút <code>LocRange</code> definuje lokácie, na ktorých sa má akcia vykonať. Hodnota <code>AllWithOperation</code> vykoná akciu na všetkých lokáciách a navyše aj na samotnej operácii.</p>
+<p>V príklade nižšie používateľ aplikuje jedinú akciu (<code>RootAction</code>), ktorá vykoná akciu na úrovni operácie (<code>AddParametersToOperation</code>) a zároveň ďalšiu akciu na úrovni lokácií (<code>AddLocationsWithParamters</code>):</p>
+<pre><code>&lt;Action Name="RootAction" LocRange="AllWithOperation"&gt;
+  &lt;ActionRef&gt;AddParametersToOperation&lt;/ActionRef&gt;
+  &lt;ActionRef&gt;AddLocationsWithParamters&lt;/ActionRef&gt;
+&lt;/Action&gt;
+
+&lt;Action Name="AddParametersToOperation" LocRange="Operation"&gt;
+  &lt;Param Name="ForceValue"/&gt;
+  &lt;Param Name="ForceFrameRef"/&gt;
+  &lt;Param Name="TimeOut"/&gt;
+&lt;/Action&gt;
+
+&lt;Action Name="AddLocationsWithParamters" LocRange="All"&gt;
+  &lt;AddLoc Name="via" RefLoc="Itself" Placed="after" CopyAttachment="true" RelZ="-200"&gt;
+    &lt;Param Name="ForceValue"/&gt;
+    &lt;Param Name="ForceFrameRef"/&gt;
+    &lt;Param Name="TimeOut"/&gt;
+  &lt;/AddLoc&gt;
+&lt;/Action&gt;</code></pre>
+
+<h3>7.26 Skrytie nadbytočných akcií zo zoznamu</h3>
+<p>Ak chcete akcie skryť zo zoznamu pod tlačidlom <strong>Select</strong>, pridajte k akcii atribút <code>Hide</code>. V príklade nižšie sa po pridaní <code>Hide</code> zobrazí iba <code>RootAction</code>:</p>
+<pre><code>&lt;Action Name="RootAction" LocRange="AllWithOperation"&gt;
+  &lt;ActionRef&gt;AddParametersToOperation&lt;/ActionRef&gt;
+  &lt;ActionRef&gt;AddLocationsWithParamters&lt;/ActionRef&gt;
+&lt;/Action&gt;
+
+&lt;Action Name="AddParametersToOperation" LocRange="Operation" Hide="true"&gt;
+  ...
+&lt;/Action&gt;
+
+&lt;Action Name="AddLocationsWithParamters" LocRange="All" Hide="true"&gt;
+  ...
+&lt;/Action&gt;</code></pre>
+<figure><img src="obrazky/str131_1.png" alt="Ponuka Select s jedinou akciou"><figcaption>V ponuke Select zostáva viditeľná iba RootAction.</figcaption></figure>
+
+<h3>7.27 ActionRef</h3>
+<p>Tento element popisuje odkaz na jednu existujúcu akciu a slúži na opätovné použitie definícií akcií v XML.</p>
+<pre><code>&lt;Action Name="Polishing" LocRange="First"&gt;
+  &lt;ActionRef&gt;AddApproachLocation&lt;/ActionRef&gt;
+  &lt;ActionRef&gt;SetFirstLocation&lt;/ActionRef&gt;
+  &lt;Param Name="SW_TIME_ON_PT" Value="0.8"/&gt;
+&lt;/Action&gt;</code></pre>
+
+<h3>7.28 ActionFilter</h3>
+<p>Táto sekcia definuje filtrovanie akcií podľa typu operácie:</p>
+<pre><code>&lt;ActionFilter&gt;
+  &lt;Operation Types="Weld,Continuous"&gt;
+    &lt;ActionRef&gt;Polishing&lt;/ActionRef&gt;
+    &lt;ActionRef&gt;SetOLPCommands&lt;/ActionRef&gt;
+  &lt;/Operation&gt;
+  &lt;Operation Types="Continuous"&gt;
+    &lt;ActionRef&gt;SetOLPCommands&lt;/ActionRef&gt;
+    &lt;ActionRef&gt;SetFirstLocation&lt;/ActionRef&gt;
+  &lt;/Operation&gt;
+&lt;/ActionFilter&gt;</code></pre>
+<div class="note"><strong>Poznámka:</strong> dialóg Apply Path Template Action zobrazí akcie podľa všetkých filtrov (prienik). Ak akcia nemá filter, zobrazí sa pre všetky operácie.</div>
+<p><strong>Types [@,1-*]</strong> – filter operácie. Možné hodnoty: <code>Weld</code>, <code>PickAndPlace</code>, <code>Continuous</code>, <code>Seam</code>.</p>
+
+<h3>7.29 If-ElseIf-Else</h3>
+<p>Na základe hodnôt robotických parametrov môžete vytvárať podmienky a rozhodovať, čo sa má v jednotlivých prípadoch stať:</p>
+<pre><code>&lt;Action Name="ActionWithLogic"&gt;
+  &lt;If&gt;
+    &lt;![CDATA['RRS_MOTION_TYPE'==1]]&gt;
+    &lt;Color Value="RED"/&gt;
+    &lt;Param Name="TimeOut" Value="3"/&gt;
+    &lt;AddLoc NameSuffix="_1" Placed="before" RefLoc="itself" RelY="-50"&gt;
+      &lt;Param Name="RRS_MOTION_TYPE" Value="2"/&gt;
+      &lt;Color Value="Yellow"/&gt;
+    &lt;/AddLoc&gt;
+  &lt;/If&gt;
+  &lt;ElseIf&gt;
+    &lt;![CDATA['RRS_MOTION_TYPE'==2]]&gt;
+    &lt;Color Value="Brown"/&gt;
+    &lt;If&gt;
+      &lt;![CDATA['TimeOut'&gt;8]]&gt;
+      &lt;AddLoc NameSuffix="_1" Placed="after" RefLoc="itself" RelX="-100"&gt;
+        &lt;Param Name="RRS_MOTION_TYPE" Value="2"/&gt;
+        &lt;Color Value="Yellow"/&gt;
+      &lt;/AddLoc&gt;
+    &lt;/If&gt;
+  &lt;/ElseIf&gt;
+  &lt;Else&gt;
+    &lt;Color Value="GREEN"/&gt;
+    &lt;Param Name="RRS_MOTION_TYPE" Value="4"/&gt;
+  &lt;/Else&gt;
+&lt;/Action&gt;</code></pre>
+
+<h3>7.30 Zložená operácia (Compound Operation)</h3>
+<p>Apply Path Template sa dá aplikovať na zložené operácie. Aby ste do dialógu nemuseli vkladať mnoho robotických operácií, vložte zloženú operáciu, ktorá ich obsahuje.</p>
+<p>V príklade nižšie je vloženie samotnej operácie <code>comp</code> ekvivalentné vloženiu operácií Curve1_op, Curve2_op, Curve3_op, Curve3_op a Weld1.</p>
+<figure><img src="obrazky/str134_1.png" alt="Aplikovanie šablóny na zloženú operáciu"><figcaption>Dialóg Apply Path Template so zloženou operáciou comp obsahujúcou viacero podoperácií.</figcaption></figure>
+<div class="note"><strong>Obmedzenie:</strong> všetky operácie pod zloženou operáciou musia mať priradený ten istý robot.</div>
+
+<h3>7.31 Kompletný príklad</h3>
+<p>Nasleduje príklad kompletnej šablóny robotickej dráhy.</p>
+<pre><code>&lt;RobotController Name="Abb-Rapid" Version="All"&gt;
+&lt;RoboticParams&gt;
+  &lt;Param Name="RRS_MOTION_TYPE" ValueType="int"/&gt;
+&lt;/RoboticParams&gt;
+&lt;/RobotController&gt;</code></pre>
+<p>V priečinku PathTemplateConfiguration:</p>
+<pre><code>&lt;!--Path Template for setting Location Colors according type--&gt;
+&lt;RobotController Name="Abb-Rapid" Version="All"&gt;
+&lt;ActionList&gt;
+
+  &lt;!--Set Color for Weld Op--&gt;
+  &lt;Action Name="SetColorWeld" LocRange="All" LocationTypes="WELD"&gt;
+    &lt;Color Value="RED"/&gt;
+  &lt;/Action&gt;
+
+  &lt;Action Name="SetColorVia" LocRange="All" LocationTypes="VIA"&gt;
+    &lt;Color Value="BLACK"/&gt;
+  &lt;/Action&gt;
+
+  &lt;Action Name="Weld Op Color" LocRange="All"
+          Description="Color weld location in Red \nColor Via location in Black"&gt;
+    &lt;ActionRef&gt;SetColorWeld&lt;/ActionRef&gt;
+    &lt;ActionRef&gt;SetColorVia&lt;/ActionRef&gt;
+  &lt;/Action&gt;
+
+  &lt;!--Add approach location--&gt;
+  &lt;Action Name="AddApproachLocation" LocRange="First"&gt;
+    &lt;AddLoc Name="approachViaLoc" Placed="Before" RefLoc="FIRST" RelX="-100" RelZ="100"/&gt;
+    &lt;Color Value="YELLOW"/&gt;
+  &lt;/Action&gt;
+
+  &lt;!--Add Via approach location before--&gt;
+  &lt;Action Name="AddViaBeforeWeld" LocRange="All" LocationTypes="WELD"&gt;
+    &lt;AddLoc NameSuffix="_01" Placed="Before" RefLoc="Itself" RelX="-5"&gt;
+      &lt;Param Name="Zone Data" Dynamic="True" Value="z30"/&gt;
+      &lt;Param Name="Speed Data" Dynamic="True" Value="v1000"/&gt;
+      &lt;Param Name="RRS_MOTION_TYPE" Value="1"/&gt;
+      &lt;Color Value="YELLOW"/&gt;
+    &lt;/AddLoc&gt;
+  &lt;/Action&gt;
+
+  &lt;!--Add Via approach location after--&gt;
+  &lt;Action Name="AddViaAfterWeld" LocRange="All" LocationTypes="WELD"&gt;
+    &lt;AddLoc NameSuffix="_02" Placed="After" RefLoc="Itself" RelX="-5"&gt;
+      &lt;Param Name="Zone Data" Dynamic="True" Value="z80"/&gt;
+      &lt;Param Name="Speed Data" Dynamic="True" Value="v600"/&gt;
+      &lt;Param Name="RRS_MOTION_TYPE" Value="1"/&gt;
+      &lt;Color Value="BLUE"/&gt;
+    &lt;/AddLoc&gt;
+  &lt;/Action&gt;
+
+  &lt;Action Name="Add Location|Add Weld Process Via" LocRange="All"
+          Description="Add an approach location before a weld point.\nZone z30, Speed v1000.
+                       \nAdd a depart location after a weld point.\nZone z80, Speed v600."&gt;
+    &lt;ActionRef&gt;AddViaBeforeWeld&lt;/ActionRef&gt;
+    &lt;ActionRef&gt;AddViaAfterWeld&lt;/ActionRef&gt;
+  &lt;/Action&gt;
+
+  &lt;!--add depart location--&gt;
+  &lt;Action Name="AddDepartLocation" LocRange="Last"&gt;
+    &lt;AddLoc Name="departViaLoc" Placed="After" RefLoc="LAST" RelX="10" RelZ="150"/&gt;
+    &lt;Color Value="YELLOW"/&gt;
+  &lt;/Action&gt;
+
+&lt;/ActionList&gt;
+&lt;/RobotController&gt;</code></pre>
+
+<h2 id="k8">8. Download Templates Configuration – šablóny a kľúčové slová</h2>
+<ul>
+<li>Umožňuje priradiť download šablóny k robotickým operáciám (nielen k robotom).</li>
+<li>Umožňuje pridať do stiahnutého súboru zákaznícke informácie z Process&nbsp;Simulate / RobotExpert ako súčasť mechanizmu šablón robota (nad rámec pevne zakódovaných kľúčových slov).</li>
+</ul>
+<p>Nasledujúci dialóg je vygenerovaný XML súbormi popísanými nižšie:</p>
+<figure><img src="obrazky/str139_1.png" alt="Dialóg Set Template and Keywords"><figcaption>Dialóg Set Template and Keywords s výberom šablóny, kľúčovými slovami robota (Factory, Line) a kľúčovými slovami operácie (Assembly, Style).</figcaption></figure>
+<p>Definície parametrov sa ukladajú do:</p>
+<pre><code>&lt;installation dir&gt;\Robotics\OLP\&lt;controller&gt;\MotionConfiguration\*.xml</code></pre>
+<figure><img src="obrazky/str139_2.png" alt="XML s definíciou parametrov"><figcaption>Súbor motion_parameter.xml s definíciou parametrov Factory, Line, Assembly a Style.</figcaption></figure>
+<p>Nové XML súbory sa nachádzajú v inštalácii radiča, v tomto určenom priečinku:</p>
+<pre><code>&lt;installation dir&gt;\Robotics\OLP\&lt;controller&gt;\DownloadTemplatesConfiguration\*.xml</code></pre>
+<figure><img src="obrazky/str140_1.png" alt="XML šablóny downloadu, časť 1"><figcaption>XML definícia download šablóny – hlavička programu s kľúčovými slovami.</figcaption></figure>
+<figure><img src="obrazky/str140_2.png" alt="XML šablóny downloadu, časť 2"><figcaption>Pokračovanie definície – telo šablóny a použitie parametrov.</figcaption></figure>
+<figure><img src="obrazky/str141_1.png" alt="XML šablóny downloadu, časť 3"><figcaption>Ďalšia časť konfigurácie šablóny downloadu.</figcaption></figure>
+<figure><img src="obrazky/str141_2.png" alt="Ukončenie XML šablóny"><figcaption>Záver súboru s uzatváracími značkami Template a RobotController.</figcaption></figure>
+<p>Po stiahnutí (download) vyzerá výsledok takto:</p>
+<figure><img src="obrazky/str142_1.png" alt="Výsledok downloadu"><figcaption>Dialóg Download Results s vygenerovaným programovým súborom obsahujúcim doplnené kľúčové slová.</figcaption></figure>
+
+<h3>Bežné pevne zakódované kľúčové slová</h3>
+<table>
+<tr><th>Kľúčové slovo</th><th>Význam</th></tr>
+<tr><td><code>&lt;ProgName&gt;</code></td><td>názov stiahnutého programu alebo operácie</td></tr>
+<tr><td><code>&lt;UserName&gt;</code></td><td>prihlasovacie meno</td></tr>
+<tr><td><code>&lt;FileName&gt;</code></td><td>názov vygenerovaného programového súboru s príponou</td></tr>
+<tr><td><code>&lt;FileBaseName&gt;</code></td><td>to isté bez prípony</td></tr>
+<tr><td><code>&lt;Date&gt;</code></td><td>dátum vygenerovania súboru</td></tr>
+<tr><td><code>&lt;Time&gt;</code></td><td>čas vygenerovania súboru</td></tr>
+<tr><td><code>&lt;Study&gt;</code></td><td>názov štúdie</td></tr>
+<tr><td><code>&lt;RobotName&gt;</code></td><td>názov robota</td></tr>
+<tr><td><code>&lt;TecnomatixSoftware&gt;</code></td><td>napríklad Process Simulate 9.1.2.1 on eMS</td></tr>
+<tr><td><code>&lt;TecnomatixVersion&gt;</code></td><td>9.1.2.1, 10.1 atď.</td></tr>
+<tr><td><code>&lt;TecnomatixPlatform&gt;</code></td><td>eMS, Teamcenter, Disconnected</td></tr>
+<tr><td><code>&lt;TecnomatixControllerVersion&gt;</code></td><td>verzia Teach Pendantu</td></tr>
+<tr><td><code>&lt;Body&gt;</code></td><td>hlavná časť programu</td></tr>
+<tr><td><code>&lt;ControllerVersion&gt;</code></td><td>tak, ako je zobrazená v Robot Setup</td></tr>
+<tr><td><code>&lt;RcsVersion&gt;</code></td><td>tak, ako je zobrazená v Robot Setup</td></tr>
+<tr><td><code>&lt;ManipulatorType&gt;</code></td><td>tak, ako je zobrazený v Robot Setup</td></tr>
+</table>
+
+<h2 id="k9">9. Novinky podľa verzií</h2>
+<table>
+<tr><th>Verzia</th><th>Súvisiace témy</th></tr>
+<tr><td>V15.1.2</td><td>Kopírovanie konfigurácie (Copy configuration)</td></tr>
+<tr><td>V15.1.1</td><td>Location, Parameter</td></tr>
+<tr><td>V15.1</td><td>Signály robota (Robot Signals)</td></tr>
+<tr><td>V14.1</td><td>DigitsAfterPoint</td></tr>
+<tr><td>V14.0.2</td><td>Oddeľovač ponuky (Menu Separator)</td></tr>
+<tr><td>V14.0.1</td><td>Atribút ApplyOn; Kopírovanie existujúcich parametrov</td></tr>
+<tr><td>V14.0</td><td>Customized Command XML Checker; Set Dynamic Parameters</td></tr>
+<tr><td>V13.1.2</td><td>Path Template: Update</td></tr>
+<tr><td>V13.1</td><td>Typ položky expression</td></tr>
+<tr><td>V13.0.2</td><td>ApplyOn s atribútom BetweenOperations; DownloadRepresentation namiesto switch a case</td></tr>
+<tr><td>V13.0.1</td><td>DownloadRepresentation namiesto switch a case</td></tr>
+<tr><td>V13.0</td><td>DigitsAfterPoint; Path Template: DynamicAlignment; Path Template: AddLoc, MoveLoc – hodnoty parametrov za behu</td></tr>
+<tr><td>V12.1.3</td><td>Hodnoty kĺbov v číselnom ovládacom prvku; Signály robota; Zložená operácia v Apply Path Template; atribút LinkTo; Path Template: nahradenie starého OLP novým; atribút ConvertToInt</td></tr>
+<tr><td>V12.1.2</td><td>Path Template: CreationIndex; Path Template: atribút ApplyOn s dosahom na lokácie v nasledujúcej/predchádzajúcej seam operácii; Path Template: kopírovanie existujúcich parametrov</td></tr>
+<tr><td>V12.1</td><td>Customized Command XML Checker</td></tr>
+<tr><td>V12.0TR1</td><td>UploadAdditionalParameters; OLP – Upload Debugger, tlačidlo „Upload and Download“; Motion – Upload Debugger, tlačidlo „Upload and Download“; Path Template: Distance od RefLoc a automatické umiestnenie pre AddLoc; Path Template: IgnoreRefLocAlignment pre AddLoc</td></tr>
+<tr><td>V12.0</td><td>Path Template: SeamRange – rozsah s krokom; LocationRange – rozsah s krokom; UseWorldCoordinates pre MoveLoc a AddLoc; atribút ApplyOn; If-ElseIf-Else</td></tr>
+<tr><td>V11.1TR3</td><td>Path Template: LocationTypes pre Pick &amp; Place; Location pre Pick &amp; Place; typ položky expression vnútri AdditionalDynamicParam; Path Template: Param s výrazom; UseLocationParamVal</td></tr>
+<tr><td>V11.1TR2</td><td>Path Template: AllWithOperation ako hodnota LocRange; Path Template: skrytie nadbytočných akcií zo zoznamu</td></tr>
+<tr><td>V11.1TR1</td><td>Path Template: Rename</td></tr>
+</table>
+
+<p class="src">Preklad do slovenčiny vyhotovený zo súboru <em>RoboticsCustomizedUIManual.pdf</em> (Robotics Customized UI, Siemens Digital Industries Software, 2022, 148 strán). Obrázky sú extrahované z originálneho dokumentu. Originál je chránený autorským právom Siemens; tento preklad slúži ako pracovná pomôcka.</p>
+
+</div>
+</body>
+</html>
